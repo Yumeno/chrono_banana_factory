@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { StoryTextInput } from '@/components/story/StoryTextInput'
 import { TimePointControls } from '@/components/time/TimePointControls'
@@ -8,6 +8,7 @@ import { GeneratedResults } from '@/components/results/GeneratedResults'
 import { ImageUpload } from '@/components/upload/ImageUpload'
 import { nanoBananaClient } from '@/lib/api/nanoBananaClient'
 import { getAspectRatioPromptSuffix, getWhiteBlankImageData, aspectRatioPresets } from '@/lib/utils/aspectRatioUtils'
+import { TimeMode, TimeUnit, timeUnitToEnglish } from '@/types/timeControl'
 import type { UploadedImage } from '@/types'
 
 export default function Home() {
@@ -32,6 +33,19 @@ export default function Home() {
     model: string
     timestamp: Date
   } | null>(null)
+  
+  // Time control state
+  const [timeControlState, setTimeControlState] = useState<{
+    mode: TimeMode
+    value: number
+    unit: TimeUnit
+    imageCount: number
+  }>({
+    mode: TimeMode.SCENE_END,
+    value: 0,
+    unit: 'minutes',
+    imageCount: 1
+  })
 
   // Multiple image generation function
   const handleGenerate = async (prompt: string, aspectRatio: string) => {
@@ -50,18 +64,77 @@ export default function Home() {
       console.log('Aspect ratio:', aspectRatio)
       console.log('Number of images:', imageCount)
 
-      // Build prompt with time control instructions based on requirements
+      // Build prompt with time control instructions based on time mode
       let timeControlSuffix = ''
+      const { mode, value, unit } = timeControlState
+      const unitText = timeUnitToEnglish[unit]
       
-      // For now, implement "シーンの最後まで" (Scene End) mode as default
-      // TODO: Add full time control UI logic later
-      if (imageCount === 1) {
-        // 【シーンの最後まで、1枚の場合】
-        timeControlSuffix = '\nGenerate the final image of the above story or scene.'
-      } else if (imageCount > 1) {
-        // 【シーンの最後まで、n枚の場合】
-        timeControlSuffix = `\nGenerate ${imageCount} separate and independent images of the above story or scene in sequence, including intermediate stages.`
+      switch (mode) {
+        case TimeMode.CURRENT_ONLY:
+          // 【現在時点のみ】 - No suffix
+          timeControlSuffix = ''
+          break
+          
+        case TimeMode.SCENE_END:
+          if (imageCount === 1) {
+            // 【シーンの最後まで、1枚の場合】
+            timeControlSuffix = '\nGenerate the final image of the above story or scene.'
+          } else {
+            // 【シーンの最後まで、n枚の場合】
+            timeControlSuffix = `\nGenerate ${imageCount} separate and independent images of the above story or scene in sequence, including intermediate stages.`
+          }
+          break
+          
+        case TimeMode.CUSTOM_FUTURE:
+          if (imageCount === 1) {
+            // 【正の数値、1枚の場合】
+            timeControlSuffix = `\nDepict ${value} ${unitText} after the above story or scene.`
+          } else {
+            // 【正の数値、n枚の場合】
+            // 各時点を具体的に計算して列挙
+            const interval = value / (imageCount - 1)
+            const timePoints: string[] = []
+            for (let i = 0; i < imageCount; i++) {
+              const timePoint = Math.round(interval * i * 100) / 100
+              const timeText = timePoint % 1 === 0 ? timePoint.toString() : timePoint.toFixed(2).replace(/\.?0+$/, '')
+              if (i === 0) {
+                timePoints.push('time 0 (now)')
+              } else {
+                timePoints.push(`${timeText} ${unitText} later`)
+              }
+            }
+            const timePointsList = timePoints.join(', ')
+            timeControlSuffix = `\nGenerate ${imageCount} distinct, separate, and independent images, showing the scene at the following intervals: ${timePointsList}. Each image should be a unique, standalone visualization.`
+          }
+          break
+          
+        case TimeMode.CUSTOM_PAST:
+          const absValue = Math.abs(value)
+          if (imageCount === 1) {
+            // 【負の数値、1枚の場合】
+            timeControlSuffix = `\nImagine and generate the scene ${absValue} ${unitText} before the above story or scene.`
+          } else {
+            // 【負の数値、n枚の場合】
+            // 各時点を具体的に計算して列挙（過去から現在へ）
+            const interval = absValue / (imageCount - 1)
+            const timePoints: string[] = []
+            for (let i = 0; i < imageCount; i++) {
+              const timePoint = Math.round((absValue - interval * i) * 100) / 100
+              const timeText = timePoint % 1 === 0 ? timePoint.toString() : timePoint.toFixed(2).replace(/\.?0+$/, '')
+              if (timePoint === 0) {
+                timePoints.push('present moment')
+              } else {
+                timePoints.push(`${timeText} ${unitText} before`)
+              }
+            }
+            const timePointsList = timePoints.join(', ')
+            timeControlSuffix = `\nGenerate ${imageCount} distinct, separate, and independent images, showing the scene at the following intervals: ${timePointsList}. Each image should be a unique, standalone visualization.`
+          }
+          break
       }
+      
+      console.log('⏰ [TIME CONTROL] Mode:', mode, 'Value:', value, 'Unit:', unit, 'Images:', imageCount)
+      console.log('📝 [TIME SUFFIX]:', timeControlSuffix)
 
       // Phase 2.7: Prepare prompt with time control and aspect ratio suffix
       const aspectRatioSuffix = getAspectRatioPromptSuffix(aspectRatio)
@@ -188,6 +261,11 @@ export default function Home() {
       <TimePointControls 
         imageCount={imageCount}
         onImageCountChange={setImageCount}
+        onTimeControlChange={useCallback((params) => {
+          setTimeControlState(params)
+          // Update imageCount from time control
+          setImageCount(params.imageCount)
+        }, [])}
       />
       
       <ImageUpload
