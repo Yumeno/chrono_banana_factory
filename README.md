@@ -1,36 +1,222 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chrono Banana Factory 🍌⏰
 
-## Getting Started
+**Time-Series Image Generation Tool** - Nano Banana Hackathon 2025 Project
 
-First, run the development server:
+## Overview
 
+Chrono Banana Factory is an innovative tool that generates a series of images representing the passage of time. Leveraging the nanobanana API (Google Gemini 2.5 Flash Image Preview API), it enables easy creation of sequential images for storytelling and video production.
+
+## Use Cases
+
+- **Create storyboard illustrations** for narratives like "A bank robber appears! After an intense car chase, they're finally arrested..."
+- **Generate start/end frames for video AI** such as "Start with a wide shot of a speeding motorcycle above the city, then drone shot zooming in on the character"
+- **Visualize temporal changes** like "A girl eating 3 hours later", "Tourist spots across four seasons", or "What delicious food looked like 2 hours ago"
+
+### Key Features
+
+- **🎬 Time-Series Image Generation**: Generate multiple images showing temporal progression
+- **⏱️ Advanced Time Control**: Four modes - Current Only, Scene Start, Scene End, Custom Time Range (Past/Future)
+- **📝 Story Enhancement**: AI-powered story generation and improvement (Gemini 2.5 Flash Lite)
+- **🎨 Art Style Selection**: 7 styles - Photo, Watercolor, Oil, 3D CG, Anime, Manga, Figure
+- **🖼️ Reference Images**: Use up to 15 reference images for guided generation
+- **📐 Aspect Ratio Control**: Support for various ratios - square, landscape, portrait, wide
+- **♻️ Image Reuse**: Use generated images as input for iterative creation
+
+## Tech Stack
+
+- **Framework**: Next.js 15.5.2 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **AI APIs**: 
+  - Gemini 2.5 Flash Image Preview (Image Generation)
+  - Gemini 2.5 Flash Lite (Text Generation)
+- **Image Processing**: HTML Canvas API
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Google AI Studio API Key
+
+### Installation
+
+1. Clone the repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/Yumeno/chrono_banana_factory.git
+cd chrono_banana_factory
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Configure environment variables
+Create `.env.local` and add your API key:
+```env
+GEMINI_API_KEY=your_api_key_here
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Start the development server
+```bash
+npm run dev
+```
 
-## Learn More
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-To learn more about Next.js, take a look at the following resources:
+## Usage
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Basic Workflow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Enter story text**: Input your ideas in the text area
+2. **Add reference images**: Upload character or background images if available
+3. **Click Enhance**: Generate enhanced prompts based on your ideas and reference images
+4. **Set image count**: Choose number of images to generate (1-10)
+5. **Configure time control**: Select temporal expression method
+6. **Choose art style**: Pick your preferred artistic style
+7. **Generate images**: Click "Generate Scenes" button
 
-## Deploy on Vercel
+### Story Enhancement Feature
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+AI-powered story generation and improvement:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Story Mode**: Generate narratives with clear scene breaks (for picture books/storyboards)
+2. **Video Mode**: Generate scene descriptions including acting and camera work (for video start/end frames)
+3. **Moment Mode**: Generate detailed single scene descriptions (general prompt enhancement)
+
+When reference images are provided, AI creatively incorporates image elements (characters, backgrounds, objects) into the narrative.
+
+### Time Control Modes
+
+#### 1. Standard
+- Generates single time point images without temporal elements
+- Behaves like standard image generation
+
+#### 2. Scene Start
+- Generates starting points of each scene, ideal for story beginnings
+- When image count is set, generates specified number of scene start images
+
+#### 3. Scene End
+- Generates ending points of each scene, perfect for climaxes and conclusions
+- When image count is set, generates specified number of scene end images
+
+#### 4. Custom Future/Past
+Specify concrete time ranges to express changes:
+- Positive values: Future relative to text description
+- Negative values: Past relative to text description
+- Time units: seconds, minutes, hours, days, weeks, months, years
+- Image count divides the time range for timelapse-like generation
+- Example: "1 year in 4 images" → Shows seasonal changes
+
+### Reference Image Usage
+
+- **Character images**: Used as story protagonists in enhancement
+- **Background images**: Used as scene settings in enhancement
+- **Object images**: Appear as props or important items in enhancement
+- **Reuse generated images**: "Use as Input" adds generated images as references
+- **Limit**: Maximum 15 images
+
+## Project Structure
+
+```
+chrono_banana_factory/
+├── src/
+│   ├── app/              # Next.js App Router
+│   │   ├── page.tsx      # Main page
+│   │   └── layout.tsx    # Layout
+│   ├── components/       # UI Components
+│   │   ├── story/        # Story-related
+│   │   ├── time/         # Time control
+│   │   ├── style/        # Style selection
+│   │   └── ui/           # shadcn/ui base components
+│   ├── lib/
+│   │   ├── api/          # API-related
+│   │   │   ├── nanoBananaClient.ts    # Gemini API client
+│   │   │   └── suggestionGenerator.ts  # Story generation
+│   │   └── utils/        # Utility functions
+│   └── types/            # TypeScript definitions
+├── public/               # Static files
+└── .env.local           # Environment variables (create this)
+```
+
+## Main Components
+
+### StoryTextInput
+Text input and enhancement functionality
+
+### TimePointControls  
+Time control settings (mode, time range, divisions)
+
+### ArtStyleSelector
+Collapsible selector for 7 art styles
+
+### ImageUploadArea
+Reference image upload with drag & drop support
+
+### GeneratedScenes
+Display and download generated images
+
+## Troubleshooting
+
+### API Key Errors
+- Get your key from Google AI Studio: https://aistudio.google.com/apikey
+- Ensure proper configuration in `.env.local`
+
+### Image Generation Errors
+- Verify prompts are specific and detailed
+- Check reference image formats (PNG, JPEG, WebP supported)
+- Confirm daily API limits haven't been reached
+
+### Time Control or Image Count Issues
+- Model responses can be unstable; try multiple attempts
+- The system relies on the AI model's interpretation
+
+## Developer Information
+
+### Build
+```bash
+npm run build
+```
+
+### Type Check
+```bash
+npm run type-check
+```
+
+### Lint
+```bash
+npm run lint
+```
+
+## API Limitations
+
+- **Free tier**: 100 requests per day (during hackathon)
+- **Image size**: Automatically adjusted
+- **Reference images**: Maximum 15 (experimentally confirmed)
+
+## License
+
+MIT License
+
+## Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss proposed changes.
+
+## Acknowledgments
+
+- Google DeepMind - Nano Banana Hackathon organizer
+- Gemini API - Powerful image and text generation capabilities
+- Next.js & Vercel - Excellent development experience and hosting
+- shadcn/ui - Beautiful UI components
+
+## Contact
+
+- GitHub: [@Yumeno](https://github.com/Yumeno)
+- Project: [Chrono Banana Factory](https://github.com/Yumeno/chrono_banana_factory)
+
+---
+
+🍌 **Nano Banana Hackathon 2025** - Unleash creativity across time!
