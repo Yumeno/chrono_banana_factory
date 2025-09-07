@@ -34,9 +34,12 @@ Analyze the user's input text and the content of their images. Create and descri
 - Focus on narrative flow and character development
 - Describe settings, characters, and actions vividly
 - If reference images are provided:
+  * MUST incorporate ALL elements from the reference images into the story
+  * Even if not directly related to the user's text, CREATIVELY INVENT connections and relationships
+  * Example: If text is about space and image shows a cat, make it an astronaut's pet or alien cat
   * USE the visual appearance of characters, objects, and backgrounds from the images
   * BUT IMAGINE new poses, expressions, and actions appropriate for each scene
-  * Integrate them into the story: characters as protagonists/supporting cast, landscapes as settings/stages, props as story elements
+  * Force integration: characters MUST become actors in the story, landscapes MUST be used as locations, objects MUST appear as props
   * Specify dynamic camera angles and compositions that enhance the narrative
   * Design appropriate lighting (time of day, mood, shadows, highlights) for each scene
   * Avoid simply describing the reference images as-is; transform them into story scenes`
@@ -56,9 +59,11 @@ Analyze the user's input text and the content of their images. Create a detailed
 - Specify camera angles and movements
 - If the user requests only one scene, create a single scene with a single shot and do not switch shots
 - If reference images are provided:
+  * MUST incorporate ALL elements from the reference images into the video
+  * Even if not directly related to the user's text, CREATIVELY INVENT connections and roles
   * USE the character designs and environmental elements from the images
   * BUT CREATE new dynamic poses, expressions, and movements for the video
-  * Integrate them into the video: characters as actors, landscapes as locations, objects as props in action
+  * Force integration: every character MUST act in the video, every landscape MUST be a scene location, every object MUST be used
   * Design camera work that brings the static references to life
   * Specify lighting changes (dramatic shadows, backlighting, color temperature) for cinematic effect
   * Describe how characters should move, emote, and interact in each shot`
@@ -78,9 +83,11 @@ Analyze the user's input text and reference images. Create a rich, detailed desc
 - Include specific details about characters, objects, environment, and mood
 - Specify artistic style, camera angle, and visual perspective
 - If reference images are provided:
+  * MUST incorporate ALL elements from the reference images into the single moment
+  * Even if not directly related to the user's text, CREATIVELY CONNECT them to the scene
   * USE the character appearances and visual styles from the images
   * BUT REIMAGINE them in new poses, expressions, and situations
-  * Integrate them meaningfully: characters as subjects, environments as settings, items as focal elements
+  * Force integration: all characters MUST be present, all environments MUST frame the scene, all objects MUST be visible
   * Create fresh compositions and camera angles that differ from the references
   * Describe specific lighting conditions (golden hour, dramatic spotlight, soft diffused light, etc.)
   * Transform static references into a dynamic, narrative moment
@@ -174,13 +181,14 @@ export class SuggestionGenerator {
     if (images.length > 0) {
       prompt += `# Reference Images:\n`
       prompt += `The user has provided ${images.length} reference image(s). `
-      prompt += `IMPORTANT: Integrate these images meaningfully into the narrative - `
-      prompt += `if they show characters, make them the protagonists or supporting cast; `
-      prompt += `if they show landscapes, use them as backgrounds or settings; `
-      prompt += `if they show objects, incorporate them as props or story elements. `
-      prompt += `CREATIVELY REIMAGINE them with new poses, expressions, actions, camera angles, and lighting appropriate for each scene. `
+      prompt += `CRITICAL REQUIREMENT: You MUST incorporate ALL elements from these images into the narrative. `
+      prompt += `Even if the images seem unrelated to the user's text, CREATIVELY INVENT connections - `
+      prompt += `for example: if text is about cooking and image shows a dragon, make it a chef's fantasy or magical cooking assistant. `
+      prompt += `Characters MUST become actors, landscapes MUST become locations, objects MUST appear as props. `
+      prompt += `NO ELEMENT should be ignored - find creative ways to include everything. `
+      prompt += `REIMAGINE them with new poses, expressions, actions, camera angles, and lighting. `
       prompt += `Consider time of day, mood lighting, shadows, and atmospheric effects. `
-      prompt += `DO NOT simply describe the images as they appear - transform them into dynamic narrative moments.\n\n`
+      prompt += `Transform the static images into dynamic narrative moments that feel naturally integrated.\n\n`
     }
     
     // Add generation instruction
