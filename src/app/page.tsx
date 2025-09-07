@@ -158,13 +158,13 @@ export default function Home() {
       if (selectedArtStyle !== 'manual') {
         const styleMap: Record<ArtStyle, string> = {
           manual: '',
-          photo: '\nRender as a photorealistic photograph.',
-          watercolor: '\nRender as a soft watercolor painting with flowing colors and gentle brushstrokes.',
-          oil: '\nRender as a rich oil painting with thick textures and deep colors.',
-          '3dcg': '\nRender as a high-quality 3D CGI with realistic lighting and materials.',
-          anime: '\nRender in Japanese anime art style with vibrant colors and expressive characters.',
-          manga: '\nRender in Japanese manga art style with black and white ink, dramatic shading and speed lines.',
-          figure: '\nRender as a miniature figure diorama with tilt-shift photography effect, shallow depth of field, and toy-like appearance.'
+          photo: '\nDepict all the subjects and the background as a photorealistic photograph style.',
+          watercolor: '\nDepict all the subjects and the background as a soft watercolor painting style with flowing colors and gentle brushstrokes.',
+          oil: '\nDepict all the subjects and the background as a rich oil painting style with thick textures and deep colors.',
+          '3dcg': '\nDepict all the subjects and the background as a high-quality 3D CGI style with realistic lighting and materials.',
+          anime: '\nDepict all the subjects and the background as a Japanese anime art style with vibrant colors and expressive characters.',
+          manga: '\nDepict all the subjects and the background as a Japanese manga art style with black and white ink, dramatic shading and speed lines.',
+          figure: '\nDepict all the subjects and the background as a miniature figure diorama style with tilt-shift photography effect, shallow depth of field, and toy-like appearance.'
         }
         artStyleSuffix = styleMap[selectedArtStyle]
       }
