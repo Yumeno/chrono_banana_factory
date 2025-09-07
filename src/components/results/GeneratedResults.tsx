@@ -35,6 +35,7 @@ export function GeneratedResults({
   const totalImages = images.length
   const [selectedAspectRatio, setSelectedAspectRatio] = useState('auto')
   const [actualImageSize, setActualImageSize] = useState<{ width: number; height: number } | null>(null)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
   // Measure actual image dimensions when it loads
   useEffect(() => {
@@ -48,7 +49,39 @@ export function GeneratedResults({
     }
   }, [images, currentIndex, hasImages])
 
+  // Download current image
+  const handleDownload = () => {
+    if (!hasImages || !images[currentIndex]) return
+
+    const currentImage = images[currentIndex]
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
+    const filename = `chrono-banana-${timestamp}.png`
+
+    // Convert base64 to blob
+    const base64Data = currentImage.split(',')[1]
+    const byteCharacters = atob(base64Data)
+    const byteNumbers = new Array(byteCharacters.length)
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i)
+    }
+    const byteArray = new Uint8Array(byteNumbers)
+    const blob = new Blob([byteArray], { type: 'image/png' })
+
+    // Create download link
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    console.log('💾 [DOWNLOAD] Image saved as:', filename)
+  }
+
   return (
+    <>
     <Card className="border-orange-100 h-full">
       <CardHeader className="pb-3">
         <CardTitle className="text-base text-orange-700 flex items-center justify-between">
@@ -69,12 +102,15 @@ export function GeneratedResults({
               <p className="text-sm text-gray-500">Generating image...</p>
             </div>
           ) : hasImages ? (
-            <div className="relative w-full h-full">
+            <div 
+              className="relative w-full h-full cursor-pointer"
+              onClick={() => setIsPreviewOpen(true)}
+            >
               <Image
                 src={images[currentIndex]}
                 alt={`Generated scene ${currentIndex + 1}`}
                 fill
-                className="object-contain rounded-lg"
+                className="object-contain rounded-lg hover:opacity-95 transition-opacity"
               />
             </div>
           ) : (
@@ -145,6 +181,7 @@ export function GeneratedResults({
             size="sm"
             disabled={!hasImages}
             className="flex-1 border-orange-200 hover:bg-orange-50"
+            onClick={handleDownload}
           >
             <Download className="h-4 w-4 mr-2" />
             Download
@@ -233,5 +270,52 @@ export function GeneratedResults({
 
       </CardContent>
     </Card>
+
+    {/* Fullscreen Preview Modal */}
+    {isPreviewOpen && hasImages && (
+      <div 
+        className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4"
+        onClick={() => setIsPreviewOpen(false)}
+      >
+        <div className="relative max-w-full max-h-full">
+          <img
+            src={images[currentIndex]}
+            alt={`Generated scene ${currentIndex + 1}`}
+            className="max-w-full max-h-[90vh] object-contain"
+          />
+          <button
+            className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition-all"
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsPreviewOpen(false)
+            }}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
+          {/* Download button in preview */}
+          <button
+            className="absolute bottom-4 right-4 text-white bg-orange-500 hover:bg-orange-600 rounded-lg px-4 py-2 flex items-center gap-2 transition-all"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleDownload()
+            }}
+          >
+            <Download className="h-4 w-4" />
+            Download
+          </button>
+          
+          {/* Image info in preview */}
+          {actualImageSize && (
+            <div className="absolute bottom-4 left-4 text-white bg-black bg-opacity-50 rounded-lg px-3 py-2 text-sm">
+              {actualImageSize.width} × {actualImageSize.height}
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+  </>
   )
 }
