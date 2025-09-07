@@ -389,11 +389,8 @@ Or create .env.local file:
     console.log('🖼️ [SUGGESTION API] Images:', request.images?.length || 0)
     
     try {
-      // Use Gemini 2.5 Flash for text generation when images are present
-      // Use Lite model only for text-only requests
-      const modelName = request.images && request.images.length > 0 
-        ? 'gemini-2.0-flash-exp'  // Full model for image analysis
-        : 'gemini-2.5-flash-lite'  // Lite model for text-only
+      // Use Gemini 2.5 Flash Lite for all text generation (supports both text and images)
+      const modelName = 'gemini-2.5-flash-lite'
       
       const model = this.ai.getGenerativeModel({ 
         model: modelName,
