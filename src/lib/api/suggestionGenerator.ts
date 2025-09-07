@@ -24,7 +24,7 @@ const STORY_PROMPT = `# Objective:
 To generate text that users can use for creating picture books, based on their input text and images.
 
 # Instructions:
-Output only the core text without any prefaces, notes, questions, or image generation. Provide only the core text. Do not include a preface, notes, questions, or explanations. Do not generate images. Language: English.
+Output only the core text without any prefaces, notes, questions, or image generation. Provide only the core text. Do not include a preface, notes, questions, or explanations. Do not generate images. Do NOT specify art style (watercolor, oil painting, anime, etc.) as user will set it separately. Language: English.
 
 # Method:
 Analyze the user's input text and the content of their images. Create and describe a story that meets the user's requirements. 
@@ -32,7 +32,7 @@ Analyze the user's input text and the content of their images. Create and descri
 # Important:
 - Clearly define the scene breaks
 - Focus on narrative flow and character development
-- Describe settings, characters, and actions vividly
+- Describe settings, characters, and actions vividly (but avoid specifying art style)
 - If reference images are provided:
   * MUST incorporate ALL elements from the reference images into the story
   * Even if not directly related to the user's text, CREATIVELY INVENT connections and relationships
@@ -48,7 +48,7 @@ const VIDEO_SCENE_PROMPT = `# Objective:
 To generate text that users can use for creating videos, based on their input text and images.
 
 # Instructions:
-Output only the core text without any prefaces, notes, questions, or image generation. Provide only the core text. Do not include a preface, notes, questions, or explanations. Do not generate images. Language: English.
+Output only the core text without any prefaces, notes, questions, or image generation. Provide only the core text. Do not include a preface, notes, questions, or explanations. Do not generate images. Do NOT specify art style (watercolor, oil painting, anime, etc.) as user will set it separately. Language: English.
 
 # Method:
 Analyze the user's input text and the content of their images. Create a detailed text-based storyboard that meets the user's requirements.
@@ -72,16 +72,16 @@ const MOMENT_PROMPT = `# Objective:
 To generate a detailed image generation prompt for a single moment/scene, based on the user's input text and reference images.
 
 # Instructions:
-Output only the core descriptive text without any prefaces, notes, questions, or explanations. Provide only the detailed description. Do not generate images. Language: English.
+Output only the core descriptive text without any prefaces, notes, questions, or explanations. Provide only the detailed description. Do not generate images. Do NOT specify art style (watercolor, oil painting, anime, etc.) as user will set it separately. Language: English.
 
 # Method:
 Analyze the user's input text and reference images. Create a rich, detailed description of a single image that captures the essence of the user's request.
 
 # Important:
 - Focus on ONE single image/moment only
-- Describe visual elements in great detail: composition, lighting, colors, textures, atmosphere
+- Describe visual elements in great detail: composition, lighting, colors, textures, atmosphere (but NOT art style)
 - Include specific details about characters, objects, environment, and mood
-- Specify artistic style, camera angle, and visual perspective
+- Specify camera angle and visual perspective (but NOT artistic style like watercolor, anime, etc.)
 - If reference images are provided:
   * MUST incorporate ALL elements from the reference images into the single moment
   * Even if not directly related to the user's text, CREATIVELY CONNECT them to the scene
