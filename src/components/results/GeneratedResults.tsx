@@ -200,6 +200,27 @@ export function GeneratedResults({
           </Select>
         </div>
 
+        {/* Future Enhancement: Prompt Enhancement Toggle */}
+        {/* TODO: Add checkbox for enabling prompt enhancement
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="enhancePrompt"
+            className="rounded border-orange-300 text-orange-500"
+          />
+          <label htmlFor="enhancePrompt" className="text-sm text-gray-600">
+            Enhance prompt for time division
+          </label>
+        </div>
+        
+        When enabled, this could:
+        - Add temporal continuity hints
+        - Include scene progression keywords
+        - Add "distinct frames" emphasis
+        - Insert cinematographic transitions
+        - Example: "cinematic sequence", "temporal progression", "evolving scene"
+        */}
+
         {/* Action Buttons */}
         <div className="flex gap-2">
           <Button

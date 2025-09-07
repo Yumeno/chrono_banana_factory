@@ -7,6 +7,7 @@ import { TimePointControls } from '@/components/time/TimePointControls'
 import { GeneratedResults } from '@/components/results/GeneratedResults'
 import { ImageUpload } from '@/components/upload/ImageUpload'
 import { nanoBananaClient } from '@/lib/api/nanoBananaClient'
+import { suggestionGenerator } from '@/lib/api/suggestionGenerator'
 import { getAspectRatioPromptSuffix, getWhiteBlankImageData, aspectRatioPresets } from '@/lib/utils/aspectRatioUtils'
 import { TimeMode, TimeUnit, timeUnitToEnglish } from '@/types/timeControl'
 import type { UploadedImage } from '@/types'
@@ -46,6 +47,10 @@ export default function Home() {
     unit: 'minutes',
     imageCount: 1
   })
+  
+  // Suggestion state
+  const [isGeneratingSuggestion, setIsGeneratingSuggestion] = useState(false)
+  const [suggestionError, setSuggestionError] = useState<string | null>(null)
 
   // Multiple image generation function
   const handleGenerate = async (prompt: string, aspectRatio: string) => {
@@ -75,13 +80,23 @@ export default function Home() {
           timeControlSuffix = ''
           break
           
+        case TimeMode.SCENE_START:
+          if (imageCount === 1) {
+            // 【シーンの最初、1枚の場合】
+            timeControlSuffix = '\nGenerate the initial image of the above story or scene.'
+          } else {
+            // 【シーンの最初、n枚の場合】
+            timeControlSuffix = `\nGenerate each ${imageCount} separate and independent images of the above story or scene starting from the beginning, including initial stages.`
+          }
+          break
+          
         case TimeMode.SCENE_END:
           if (imageCount === 1) {
             // 【シーンの最後まで、1枚の場合】
             timeControlSuffix = '\nGenerate the final image of the above story or scene.'
           } else {
             // 【シーンの最後まで、n枚の場合】
-            timeControlSuffix = `\nGenerate ${imageCount} separate and independent images of the above story or scene in sequence, including intermediate stages.`
+            timeControlSuffix = `\nGenerate each ${imageCount} separate and independent images of the above story or scene in sequence, including intermediate stages.`
           }
           break
           
@@ -104,7 +119,7 @@ export default function Home() {
               }
             }
             const timePointsList = timePoints.join(', ')
-            timeControlSuffix = `\nGenerate ${imageCount} distinct, separate, and independent images, showing the scene at the following intervals: ${timePointsList}. Each image should be a unique, standalone visualization.`
+            timeControlSuffix = `\nGenerate each ${imageCount} distinct, separate, and independent images, showing the scene at the following intervals: ${timePointsList}. Each image should be a unique, standalone visualization.`
           }
           break
           
@@ -128,7 +143,7 @@ export default function Home() {
               }
             }
             const timePointsList = timePoints.join(', ')
-            timeControlSuffix = `\nGenerate ${imageCount} distinct, separate, and independent images, showing the scene at the following intervals: ${timePointsList}. Each image should be a unique, standalone visualization.`
+            timeControlSuffix = `\nGenerate each ${imageCount} distinct, separate, and independent images, showing the scene at the following intervals: ${timePointsList}. Each image should be a unique, standalone visualization.`
           }
           break
       }
@@ -250,22 +265,55 @@ export default function Home() {
     }
   }
 
+  // Handle suggestion generation
+  const handleGenerateSuggestion = useCallback(async (mode: 'story' | 'video') => {
+    setIsGeneratingSuggestion(true)
+    setSuggestionError(null)
+    
+    try {
+      console.log('🎯 [SUGGESTION] Starting generation')
+      console.log('📝 [SUGGESTION] Current text:', storyText.length, 'chars')
+      console.log('🖼️ [SUGGESTION] Uploaded images:', uploadedImages.length)
+      console.log('🎬 [SUGGESTION] Mode:', mode)
+      
+      // Generate suggestion using the generator
+      const response = await suggestionGenerator.generate(
+        {
+          currentText: storyText,
+          images: uploadedImages,
+          mode: mode === 'video' ? 'scene' : 'story'
+        },
+        nanoBananaClient
+      )
+      
+      if (response.success && response.suggestion) {
+        console.log('✅ [SUGGESTION] Generated successfully')
+        setStoryText(response.suggestion)
+        setSuggestionError(null)
+      } else {
+        throw new Error(response.error || 'Failed to generate suggestion')
+      }
+    } catch (error) {
+      console.error('❌ [SUGGESTION] Generation failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate suggestion'
+      setSuggestionError(errorMessage)
+      
+      // Clear error after 5 seconds
+      setTimeout(() => setSuggestionError(null), 5000)
+    } finally {
+      setIsGeneratingSuggestion(false)
+    }
+  }, [storyText, uploadedImages])
+
   // Left Panel Content
   const leftPanel = (
     <div className="space-y-6 h-full">
       <StoryTextInput
         value={storyText}
         onChange={setStoryText}
-      />
-      
-      <TimePointControls 
-        imageCount={imageCount}
-        onImageCountChange={setImageCount}
-        onTimeControlChange={useCallback((params) => {
-          setTimeControlState(params)
-          // Update imageCount from time control
-          setImageCount(params.imageCount)
-        }, [])}
+        onGenerateSuggestion={handleGenerateSuggestion}
+        isGeneratingSuggestion={isGeneratingSuggestion}
+        suggestionError={suggestionError}
       />
       
       <ImageUpload
@@ -278,7 +326,17 @@ export default function Home() {
 
   // Right Panel Content
   const rightPanel = (
-    <div className="h-full">
+    <div className="h-full space-y-4">
+      <TimePointControls 
+        imageCount={imageCount}
+        onImageCountChange={setImageCount}
+        onTimeControlChange={useCallback((params) => {
+          setTimeControlState(params)
+          // Update imageCount from time control
+          setImageCount(params.imageCount)
+        }, [])}
+      />
+      
       <GeneratedResults
         images={generatedImages}
         currentIndex={currentImageIndex}

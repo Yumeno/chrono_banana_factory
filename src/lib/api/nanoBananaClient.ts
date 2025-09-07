@@ -379,6 +379,83 @@ Or create .env.local file:
     return this.parseTimelineResponse(response, request)
   }
 
+  // Suggestion generation for story/scene text
+  async generateSuggestion(request: {
+    prompt: string
+    images?: Array<{ data: string; mimeType: string }>
+  }): Promise<{ suggestion: string; model: string; metadata?: any }> {
+    await this.enforceRateLimit()
+    
+    console.log('🎨 [SUGGESTION API] Starting text generation')
+    console.log('📝 [SUGGESTION API] Prompt length:', request.prompt.length)
+    console.log('🖼️ [SUGGESTION API] Images:', request.images?.length || 0)
+    
+    try {
+      // Use Gemini 1.5 Flash for text generation (faster and cheaper than image model)
+      const model = this.ai.getGenerativeModel({ 
+        model: 'gemini-1.5-flash',
+        generationConfig: {
+          temperature: 0.8,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        }
+      })
+      
+      // Build contents array
+      const contents: any[] = [{ text: request.prompt }]
+      
+      // Add images if provided
+      if (request.images && request.images.length > 0) {
+        request.images.forEach((img, index) => {
+          console.log(`  📷 Image ${index + 1}: ${img.mimeType}`)
+          contents.push({
+            inlineData: {
+              mimeType: img.mimeType,
+              data: img.data
+            }
+          })
+        })
+      }
+      
+      // Generate content
+      const response = await model.generateContent(contents)
+      
+      // Extract text from response
+      const result = response.response
+      const text = result.text()
+      
+      if (!text) {
+        throw new Error('No text generated from API')
+      }
+      
+      console.log('✅ [SUGGESTION API] Generated text length:', text.length)
+      
+      return {
+        suggestion: text,
+        model: 'gemini-1.5-flash',
+        metadata: {
+          processingTime: Date.now() - this.lastRequestTime,
+          outputLength: text.length
+        }
+      }
+    } catch (error) {
+      console.error('❌ [SUGGESTION API] Generation failed:', error)
+      
+      // Handle specific errors
+      if (error instanceof Error) {
+        if (error.message.includes('SAFETY')) {
+          throw new Error('Content was blocked by safety filters. Please modify your input.')
+        }
+        if (error.message.includes('429')) {
+          throw new Error('API rate limit reached. Please wait a moment and try again.')
+        }
+      }
+      
+      throw error
+    }
+  }
+
   private generateId(): string {
     const timestamp = Date.now()
     const randomPart1 = Math.random().toString(36).substr(2, 9)
@@ -517,6 +594,10 @@ export const nanoBananaClient = {
 
   async generateTimeline(request: ImageGenerationRequest): Promise<TimelineResponse> {
     return this.instance.generateTimeline(request)
+  },
+
+  async generateSuggestion(request: { prompt: string; images?: Array<{ data: string; mimeType: string }> }): Promise<{ suggestion: string; model: string; metadata?: any }> {
+    return this.instance.generateSuggestion(request)
   },
 
   isReady(): boolean {
