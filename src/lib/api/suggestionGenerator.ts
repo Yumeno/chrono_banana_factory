@@ -33,7 +33,12 @@ Analyze the user's input text and the content of their images. Create and descri
 - Clearly define the scene breaks
 - Focus on narrative flow and character development
 - Describe settings, characters, and actions vividly
-- If reference images are provided, incorporate their elements naturally into the story`
+- If reference images are provided:
+  * USE the visual appearance of characters, objects, and backgrounds from the images
+  * BUT IMAGINE new poses, expressions, and actions appropriate for each scene
+  * Specify dynamic camera angles and compositions that enhance the narrative
+  * Design appropriate lighting (time of day, mood, shadows, highlights) for each scene
+  * Avoid simply describing the reference images as-is; transform them into story scenes`
 
 const VIDEO_SCENE_PROMPT = `# Objective:
 To generate text that users can use for creating videos, based on their input text and images.
@@ -49,7 +54,12 @@ Analyze the user's input text and the content of their images. Create a detailed
 - Include specific shot types (close-up, wide shot, pan, zoom, etc.)
 - Specify camera angles and movements
 - If the user requests only one scene, create a single scene with a single shot and do not switch shots
-- If reference images are provided, describe how they should be used in the video`
+- If reference images are provided:
+  * USE the character designs and environmental elements from the images
+  * BUT CREATE new dynamic poses, expressions, and movements for the video
+  * Design camera work that brings the static references to life
+  * Specify lighting changes (dramatic shadows, backlighting, color temperature) for cinematic effect
+  * Describe how characters should move, emote, and interact in each shot`
 
 const MOMENT_PROMPT = `# Objective:
 To generate a detailed image generation prompt for a single moment/scene, based on the user's input text and reference images.
@@ -65,7 +75,12 @@ Analyze the user's input text and reference images. Create a rich, detailed desc
 - Describe visual elements in great detail: composition, lighting, colors, textures, atmosphere
 - Include specific details about characters, objects, environment, and mood
 - Specify artistic style, camera angle, and visual perspective
-- If reference images are provided, seamlessly incorporate their visual elements
+- If reference images are provided:
+  * USE the character appearances and visual styles from the images
+  * BUT REIMAGINE them in new poses, expressions, and situations
+  * Create fresh compositions and camera angles that differ from the references
+  * Describe specific lighting conditions (golden hour, dramatic spotlight, soft diffused light, etc.)
+  * Transform static references into a dynamic, narrative moment
 - Use vivid, precise language suitable for image generation
 - Include details about foreground, middle ground, and background elements
 - Describe the emotional tone and ambiance of the scene`
@@ -156,8 +171,10 @@ export class SuggestionGenerator {
     if (images.length > 0) {
       prompt += `# Reference Images:\n`
       prompt += `The user has provided ${images.length} reference image(s). `
-      prompt += `Please analyze these images and incorporate their elements (characters, settings, objects, mood) into the generated text. `
-      prompt += `Describe how each image relates to the story or scene.\n\n`
+      prompt += `IMPORTANT: Use the character designs, objects, and environmental elements from these images, `
+      prompt += `but CREATIVELY REIMAGINE them with new poses, expressions, actions, camera angles, and lighting appropriate for each scene. `
+      prompt += `Consider time of day, mood lighting, shadows, and atmospheric effects. `
+      prompt += `DO NOT simply describe the images as they appear - transform them into dynamic narrative moments.\n\n`
     }
     
     // Add generation instruction

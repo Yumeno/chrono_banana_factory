@@ -173,9 +173,7 @@ Or create .env.local file:
       throw new Error('Prompt cannot be empty')
     }
     
-    if (request.prompt.length > 2000) {
-      throw new Error('Prompt too long (max 2000 characters)')
-    }
+    // Removed 2000 character limit - no restriction on prompt length
   }
 
   private validateEditRequest(request: ImageEditRequest): void {
