@@ -110,7 +110,7 @@ export class SuggestionGenerator {
         success: true,
         suggestion: response.suggestion,
         metadata: {
-          model: response.model || 'gemini-1.5-flash',
+          model: response.model || 'gemini-2.5-flash-lite',
           processingTime: Date.now() - startTime,
           detectedMode: mode,
           ...response.metadata
@@ -123,7 +123,7 @@ export class SuggestionGenerator {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to generate suggestion',
         metadata: {
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.5-flash-lite',
           processingTime: Date.now() - startTime
         }
       }

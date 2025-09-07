@@ -391,9 +391,9 @@ Or create .env.local file:
     console.log('🖼️ [SUGGESTION API] Images:', request.images?.length || 0)
     
     try {
-      // Use Gemini 1.5 Flash for text generation (faster and cheaper than image model)
+      // Use Gemini 2.5 Flash Lite for text generation (newest lightweight model)
       const model = this.ai.getGenerativeModel({ 
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-flash-lite',
         generationConfig: {
           temperature: 0.8,
           topK: 40,
@@ -433,7 +433,7 @@ Or create .env.local file:
       
       return {
         suggestion: text,
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-flash-lite',
         metadata: {
           processingTime: Date.now() - this.lastRequestTime,
           outputLength: text.length
