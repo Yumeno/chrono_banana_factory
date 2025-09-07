@@ -87,7 +87,7 @@ Or create .env.local file:
 🌐 Get API Key: https://aistudio.google.com/apikey`
   }
 
-  async generateImage(request: ImageGenerationRequest): Promise<GeneratedImage> {
+  async generateImage(request: ImageGenerationRequest): Promise<GeneratedImage | GeneratedImage[]> {
     this.validateRequest(request)
     await this.enforceRateLimit()
 
@@ -135,7 +135,7 @@ Or create .env.local file:
     }
   }
 
-  async editImage(request: ImageEditRequest): Promise<GeneratedImage> {
+  async editImage(request: ImageEditRequest): Promise<GeneratedImage | GeneratedImage[]> {
     this.validateEditRequest(request)
     await this.enforceRateLimit()
 
@@ -214,7 +214,7 @@ Or create .env.local file:
   }
 
 
-  private parseResponse(response: any, request: ImageGenerationRequest | ImageEditRequest): GeneratedImage {
+  private parseResponse(response: any, request: ImageGenerationRequest | ImageEditRequest): GeneratedImage | GeneratedImage[] {
     // Log the raw response for debugging
     console.log('🔍 Raw API Response:', JSON.stringify(response, null, 2))
     
@@ -235,18 +235,23 @@ Or create .env.local file:
 
     // Check if response contains candidates with parts
     if (result.candidates?.[0]?.content?.parts) {
-      for (const part of result.candidates[0].content.parts) {
+      const images: GeneratedImage[] = []
+      
+      // Collect all images from the response
+      result.candidates[0].content.parts.forEach((part: any, index: number) => {
         // Check for inline data (base64 encoded image)
         if (part.inlineData) {
           const { mimeType, data } = part.inlineData
 
           if (!mimeType || !data) {
-            throw new Error('Invalid image data in API response')
+            console.log(`⚠️ Skipping invalid image data at index ${index}`)
+            return
           }
 
           const imageUrl = `data:${mimeType};base64,${data}`
+          console.log(`✅ [IMAGE ${index}] Found image: ${mimeType}, size: ${data.length} bytes`)
 
-          return {
+          images.push({
             id: this.generateId(),
             imageUrl,
             prompt: request.prompt,
@@ -255,11 +260,20 @@ Or create .env.local file:
             metadata: {
               mimeType,
               processingTime: Date.now() - this.lastRequestTime,
+              imageIndex: index,
               // Include text content if any (for mixed responses)
               textResponse: textContent || undefined
             }
-          }
+          })
         }
+      })
+      
+      // Return array if multiple images, single image if one
+      if (images.length > 1) {
+        console.log(`🎨 [MULTI-IMAGE] Returning ${images.length} images`)
+        return images
+      } else if (images.length === 1) {
+        return images[0]
       }
     }
 
@@ -493,11 +507,11 @@ export const nanoBananaClient = {
   },
 
   // APIメソッドをプロキシ
-  async generateImage(request: ImageGenerationRequest): Promise<GeneratedImage> {
+  async generateImage(request: ImageGenerationRequest): Promise<GeneratedImage | GeneratedImage[]> {
     return this.instance.generateImage(request)
   },
 
-  async editImage(request: ImageEditRequest): Promise<GeneratedImage> {
+  async editImage(request: ImageEditRequest): Promise<GeneratedImage | GeneratedImage[]> {
     return this.instance.editImage(request)
   },
 

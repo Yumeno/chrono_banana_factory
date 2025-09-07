@@ -8,12 +8,12 @@ import { Badge } from '@/components/ui/badge'
 import { Clock, Play, SkipForward } from 'lucide-react'
 
 interface TimePointControlsProps {
-  // Placeholder props for future state integration
   isCurrentOnlyChecked?: boolean
   isSceneEndChecked?: boolean
   timeValue?: number
   timeUnit?: string
   imageCount?: number
+  onImageCountChange?: (count: number) => void
 }
 
 export function TimePointControls({
@@ -21,8 +21,15 @@ export function TimePointControls({
   isSceneEndChecked = true,
   timeValue = 0,
   timeUnit = 'minutes',
-  imageCount = 1
+  imageCount = 1,
+  onImageCountChange
 }: TimePointControlsProps) {
+  const handleImageCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10)
+    if (!isNaN(value) && value >= 1 && value <= 10) {
+      onImageCountChange?.(value)
+    }
+  }
   return (
     <Card className="border-orange-100">
       <CardHeader className="pb-3">
@@ -89,19 +96,22 @@ export function TimePointControls({
           </div>
         </div>
 
-        {/* Image Count - Placeholder */}
+        {/* Image Count */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">
             Number of images
           </label>
-          <Input
-            type="number"
-            value={imageCount}
-            min="1"
-            max="10"
-            disabled // Placeholder - no logic yet
-            className="w-20"
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              value={imageCount}
+              onChange={handleImageCountChange}
+              min="1"
+              max="10"
+              className="w-20"
+            />
+            <span className="text-xs text-gray-500">Max: 10</span>
+          </div>
         </div>
 
         {/* Status Display */}

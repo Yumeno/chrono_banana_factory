@@ -20,6 +20,12 @@ export default function Home() {
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([])
   const [textResponse, setTextResponse] = useState<string | null>(null)
   const [showTextAlert, setShowTextAlert] = useState(false)
+  const [imageCount, setImageCount] = useState(1)
+  const [generationProgress, setGenerationProgress] = useState<{
+    current: number
+    total: number
+    message: string
+  } | null>(null)
   const [generationMetadata, setGenerationMetadata] = useState<{
     prompt: string
     aspectRatio: string
@@ -27,21 +33,41 @@ export default function Home() {
     timestamp: Date
   } | null>(null)
 
-  // Basic image generation function
+  // Multiple image generation function
   const handleGenerate = async (prompt: string, aspectRatio: string) => {
     if (!prompt.trim()) return
 
     setIsGenerating(true)
     setGenerationError(null)
+    setGeneratedImages([]) // Clear previous images
+    setCurrentImageIndex(0)
+    setTextResponse(null)
+    setShowTextAlert(false)
 
     try {
       console.log('🎬 Starting image generation...')
       console.log('Prompt:', prompt)
       console.log('Aspect ratio:', aspectRatio)
+      console.log('Number of images:', imageCount)
 
-      // Phase 2.7: Prepare prompt with aspect ratio suffix and white blank image
+      // Build prompt with time control instructions based on requirements
+      let timeControlSuffix = ''
+      
+      // For now, implement "シーンの最後まで" (Scene End) mode as default
+      // TODO: Add full time control UI logic later
+      if (imageCount === 1) {
+        // 【シーンの最後まで、1枚の場合】
+        timeControlSuffix = '\nGenerate the final image of the above story or scene.'
+      } else if (imageCount > 1) {
+        // 【シーンの最後まで、n枚の場合】
+        timeControlSuffix = `\nGenerate ${imageCount} separate and independent images of the above story or scene in sequence, including intermediate stages.`
+      }
+
+      // Phase 2.7: Prepare prompt with time control and aspect ratio suffix
       const aspectRatioSuffix = getAspectRatioPromptSuffix(aspectRatio)
-      const finalPrompt = prompt.trim() + aspectRatioSuffix
+      const finalPrompt = prompt.trim() + timeControlSuffix + aspectRatioSuffix
+      
+      console.log('📝 [FINAL PROMPT]:', finalPrompt)
       
       // Prepare images array with uploaded images and white blank image for aspect ratio control
       console.log('📐 [ASPECT RATIO] Selected:', aspectRatio)
@@ -79,6 +105,15 @@ export default function Home() {
         console.log(`  ${index + 1}. ${isWhite ? '🎨 WHITE BLANK' : '👤 USER'} - ${img.name} (${size})`)
       })
 
+      // Single API call with prompt containing the image count
+      setGenerationProgress({
+        current: 1,
+        total: 1,
+        message: `Generating ${imageCount} image${imageCount > 1 ? 's' : ''}...`
+      })
+
+      console.log(`🖼️ Requesting ${imageCount} image(s) from API`)
+
       // Use editImage if we have reference images, otherwise use generateImage
       const result = imagesForApi.length > 0
         ? await nanoBananaClient.editImage({
@@ -94,19 +129,21 @@ export default function Home() {
             model: 'gemini-2.5-flash-image-preview'
           })
 
-      console.log('✅ Generation successful:', result)
+      console.log(`✅ Generation result:`, result)
+
+      // Clear progress
+      setGenerationProgress(null)
 
       // Check if we got a text-only response
-      if (result.metadata?.isTextOnly && result.metadata?.textResponse) {
+      if (result && 'metadata' in result && result.metadata?.isTextOnly && result.metadata?.textResponse) {
         console.log('📝 Text-only response received')
         setTextResponse(result.metadata.textResponse)
         setShowTextAlert(true)
-        // Clear any previous images
-        setGeneratedImages([])
-        setGenerationError(null)
-      } else if (result.imageUrl) {
-        setGeneratedImages([result.imageUrl])
-        setCurrentImageIndex(0)
+      } else if (Array.isArray(result)) {
+        // Handle multiple images
+        console.log(`🎨 Received ${result.length} images from API`)
+        const imageUrls = result.map(img => img.imageUrl)
+        setGeneratedImages(imageUrls)
         
         // Store generation metadata
         setGenerationMetadata({
@@ -115,15 +152,26 @@ export default function Home() {
           model: 'gemini-2.5-flash-image-preview',
           timestamp: new Date()
         })
+        setTextResponse(null)
+        setShowTextAlert(false)
+      } else if (result && 'imageUrl' in result && result.imageUrl) {
+        // Handle single image
+        setGeneratedImages([result.imageUrl])
         
-        // Clear any previous error and text response
-        setGenerationError(null)
+        // Store generation metadata
+        setGenerationMetadata({
+          prompt: prompt.trim(),
+          aspectRatio: aspectRatio,
+          model: 'gemini-2.5-flash-image-preview',
+          timestamp: new Date()
+        })
         setTextResponse(null)
         setShowTextAlert(false)
       }
     } catch (error) {
       console.error('❌ Generation failed:', error)
       setGenerationError(error instanceof Error ? error.message : 'Generation failed')
+      setGenerationProgress(null)
     } finally {
       setIsGenerating(false)
     }
@@ -137,7 +185,10 @@ export default function Home() {
         onChange={setStoryText}
       />
       
-      <TimePointControls />
+      <TimePointControls 
+        imageCount={imageCount}
+        onImageCountChange={setImageCount}
+      />
       
       <ImageUpload
         images={uploadedImages}
@@ -157,6 +208,8 @@ export default function Home() {
         onGenerate={handleGenerate}
         storyText={storyText}
         metadata={generationMetadata}
+        onIndexChange={setCurrentImageIndex}
+        generationProgress={generationProgress}
       />
       
       {/* Text Response Alert Popup */}

@@ -21,6 +21,12 @@ interface GeneratedResultsProps {
     model: string
     timestamp: Date
   } | null
+  onIndexChange?: (index: number) => void
+  generationProgress?: {
+    current: number
+    total: number
+    message: string
+  } | null
 }
 
 export function GeneratedResults({
@@ -29,7 +35,9 @@ export function GeneratedResults({
   isLoading = false,
   onGenerate,
   storyText = '',
-  metadata = null
+  metadata = null,
+  onIndexChange,
+  generationProgress = null
 }: GeneratedResultsProps) {
   const hasImages = images.length > 0
   const totalImages = images.length
@@ -99,7 +107,22 @@ export function GeneratedResults({
           {isLoading ? (
             <div className="text-center space-y-2">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
-              <p className="text-sm text-gray-500">Generating image...</p>
+              <p className="text-sm text-gray-500">
+                {generationProgress ? generationProgress.message : 'Generating image...'}
+              </p>
+              {generationProgress && (
+                <div className="w-48 mx-auto">
+                  <div className="bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-orange-500 h-2 rounded-full transition-all"
+                      style={{ width: `${(generationProgress.current / generationProgress.total) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {generationProgress.current} / {generationProgress.total}
+                  </p>
+                </div>
+              )}
             </div>
           ) : hasImages ? (
             <div 
@@ -130,17 +153,19 @@ export function GeneratedResults({
               size="sm"
               disabled={currentIndex === 0}
               className="border-orange-200"
+              onClick={() => onIndexChange?.(currentIndex - 1)}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             
             <div className="flex gap-1">
               {images.map((_, index) => (
-                <div
+                <button
                   key={index}
-                  className={`w-2 h-2 rounded-full ${
-                    index === currentIndex ? 'bg-orange-500' : 'bg-gray-300'
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === currentIndex ? 'bg-orange-500' : 'bg-gray-300 hover:bg-gray-400'
                   }`}
+                  onClick={() => onIndexChange?.(index)}
                 />
               ))}
             </div>
@@ -150,6 +175,7 @@ export function GeneratedResults({
               size="sm"
               disabled={currentIndex === totalImages - 1}
               className="border-orange-200"
+              onClick={() => onIndexChange?.(currentIndex + 1)}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
