@@ -20,6 +20,8 @@ interface GeneratedResultsProps {
     aspectRatio: string
     model: string
     timestamp: Date
+    timeControlSuffix?: string
+    aspectRatioSuffix?: string
   } | null
   onIndexChange?: (index: number) => void
   generationProgress?: {
@@ -276,8 +278,24 @@ export function GeneratedResults({
               </summary>
               <div className="mt-2 p-3 bg-gray-50 rounded space-y-2 text-xs">
                 <div>
-                  <span className="font-semibold text-gray-700">Prompt:</span>
+                  <span className="font-semibold text-gray-700">User Prompt:</span>
                   <p className="text-gray-600 mt-1">{metadata.prompt}</p>
+                  
+                  {/* Time Control Suffix */}
+                  {metadata.timeControlSuffix && (
+                    <>
+                      <span className="font-semibold text-blue-700 mt-2 block">Time Control (Auto-added):</span>
+                      <p className="text-blue-600 mt-1 italic">{metadata.timeControlSuffix}</p>
+                    </>
+                  )}
+                  
+                  {/* Aspect Ratio Suffix */}
+                  {metadata.aspectRatioSuffix && (
+                    <>
+                      <span className="font-semibold text-green-700 mt-2 block">Aspect Ratio (Auto-added):</span>
+                      <p className="text-green-600 mt-1 italic">{metadata.aspectRatioSuffix}</p>
+                    </>
+                  )}
                 </div>
                 <div className="flex gap-4">
                   <div>

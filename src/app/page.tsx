@@ -233,12 +233,14 @@ export default function Home() {
         const imageUrls = result.map(img => img.imageUrl)
         setGeneratedImages(imageUrls)
         
-        // Store generation metadata
+        // Store generation metadata with suffixes
         setGenerationMetadata({
           prompt: prompt.trim(),
           aspectRatio: aspectRatio,
           model: 'gemini-2.5-flash-image-preview',
-          timestamp: new Date()
+          timestamp: new Date(),
+          timeControlSuffix: timeControlSuffix,
+          aspectRatioSuffix: aspectRatioSuffix
         })
         setTextResponse(null)
         setShowTextAlert(false)
@@ -246,12 +248,14 @@ export default function Home() {
         // Handle single image
         setGeneratedImages([result.imageUrl])
         
-        // Store generation metadata
+        // Store generation metadata with suffixes
         setGenerationMetadata({
           prompt: prompt.trim(),
           aspectRatio: aspectRatio,
           model: 'gemini-2.5-flash-image-preview',
-          timestamp: new Date()
+          timestamp: new Date(),
+          timeControlSuffix: timeControlSuffix,
+          aspectRatioSuffix: aspectRatioSuffix
         })
         setTextResponse(null)
         setShowTextAlert(false)
