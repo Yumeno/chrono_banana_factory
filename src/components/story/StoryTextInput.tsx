@@ -11,7 +11,7 @@ interface StoryTextInputProps {
   value: string
   onChange: (value: string) => void
   placeholder?: string
-  onGenerateSuggestion?: (mode: 'story' | 'video') => Promise<void>
+  onGenerateSuggestion?: (mode: 'story' | 'video' | 'moment') => Promise<void>
   isGeneratingSuggestion?: boolean
   suggestionError?: string | null
 }
@@ -24,7 +24,7 @@ export function StoryTextInput({
   isGeneratingSuggestion = false,
   suggestionError = null
 }: StoryTextInputProps) {
-  const [enhanceMode, setEnhanceMode] = useState<'story' | 'video'>('story')
+  const [enhanceMode, setEnhanceMode] = useState<'story' | 'video' | 'moment'>('story')
   return (
     <Card className="border-orange-100">
       <CardHeader className="pb-3">
@@ -56,8 +56,8 @@ export function StoryTextInput({
         )}
 
         {/* Mode Selection Radio Buttons */}
-        <div className="flex gap-4 justify-center">
-          <label className="flex items-center gap-2 cursor-pointer">
+        <div className="flex gap-3 justify-center">
+          <label className="flex items-center gap-1.5 cursor-pointer">
             <input
               type="radio"
               name="enhanceMode"
@@ -68,7 +68,7 @@ export function StoryTextInput({
             />
             <span className="text-sm text-gray-700">Story</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex items-center gap-1.5 cursor-pointer">
             <input
               type="radio"
               name="enhanceMode"
@@ -77,7 +77,18 @@ export function StoryTextInput({
               onChange={(e) => setEnhanceMode('video')}
               className="text-orange-500 focus:ring-orange-300"
             />
-            <span className="text-sm text-gray-700">Video Scene</span>
+            <span className="text-sm text-gray-700">Video</span>
+          </label>
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <input
+              type="radio"
+              name="enhanceMode"
+              value="moment"
+              checked={enhanceMode === 'moment'}
+              onChange={(e) => setEnhanceMode('moment')}
+              className="text-orange-500 focus:ring-orange-300"
+            />
+            <span className="text-sm text-gray-700">Moment</span>
           </label>
         </div>
 

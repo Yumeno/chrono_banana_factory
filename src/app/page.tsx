@@ -266,7 +266,7 @@ export default function Home() {
   }
 
   // Handle suggestion generation
-  const handleGenerateSuggestion = useCallback(async (mode: 'story' | 'video') => {
+  const handleGenerateSuggestion = useCallback(async (mode: 'story' | 'video' | 'moment') => {
     setIsGeneratingSuggestion(true)
     setSuggestionError(null)
     
@@ -276,12 +276,22 @@ export default function Home() {
       console.log('🖼️ [SUGGESTION] Uploaded images:', uploadedImages.length)
       console.log('🎬 [SUGGESTION] Mode:', mode)
       
+      // Map UI mode to API mode
+      let apiMode: 'story' | 'scene' | 'moment'
+      if (mode === 'video') {
+        apiMode = 'scene'
+      } else if (mode === 'moment') {
+        apiMode = 'moment'
+      } else {
+        apiMode = 'story'
+      }
+      
       // Generate suggestion using the generator
       const response = await suggestionGenerator.generate(
         {
           currentText: storyText,
           images: uploadedImages,
-          mode: mode === 'video' ? 'scene' : 'story'
+          mode: apiMode
         },
         nanoBananaClient
       )
@@ -305,6 +315,44 @@ export default function Home() {
     }
   }, [storyText, uploadedImages])
 
+  // Handle using generated image as input
+  const handleUseAsInput = useCallback(async (imageUrl: string) => {
+    try {
+      console.log('📥 [USE AS INPUT] Converting generated image to input')
+      
+      // Fetch the image from the URL
+      const response = await fetch(imageUrl)
+      const blob = await response.blob()
+      
+      // Convert blob to base64
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const base64 = reader.result as string
+        const base64Data = base64.split(',')[1] // Remove data:image/png;base64, prefix
+        
+        // Create a new uploaded image object
+        const newImage: UploadedImage = {
+          id: `generated-${Date.now()}`,
+          file: new File([blob], `generated-${Date.now()}.png`, { type: blob.type }),
+          name: `Generated Image ${new Date().toLocaleTimeString()}`,
+          size: blob.size,
+          mimeType: blob.type,
+          base64: base64Data,
+          previewUrl: imageUrl,
+          uploadedAt: new Date()
+        }
+        
+        // Add to uploaded images
+        setUploadedImages(prev => [...prev, newImage])
+        console.log('✅ [USE AS INPUT] Image added to inputs')
+      }
+      
+      reader.readAsDataURL(blob)
+    } catch (error) {
+      console.error('❌ [USE AS INPUT] Failed to convert image:', error)
+    }
+  }, [])
+
   // Left Panel Content
   const leftPanel = (
     <div className="space-y-6 h-full">
@@ -326,17 +374,7 @@ export default function Home() {
 
   // Right Panel Content
   const rightPanel = (
-    <div className="h-full space-y-4">
-      <TimePointControls 
-        imageCount={imageCount}
-        onImageCountChange={setImageCount}
-        onTimeControlChange={useCallback((params) => {
-          setTimeControlState(params)
-          // Update imageCount from time control
-          setImageCount(params.imageCount)
-        }, [])}
-      />
-      
+    <div className="space-y-4">
       <GeneratedResults
         images={generatedImages}
         currentIndex={currentImageIndex}
@@ -346,6 +384,17 @@ export default function Home() {
         metadata={generationMetadata}
         onIndexChange={setCurrentImageIndex}
         generationProgress={generationProgress}
+        onUseAsInput={handleUseAsInput}
+      />
+      
+      <TimePointControls 
+        imageCount={imageCount}
+        onImageCountChange={setImageCount}
+        onTimeControlChange={useCallback((params) => {
+          setTimeControlState(params)
+          // Update imageCount from time control
+          setImageCount(params.imageCount)
+        }, [])}
       />
       
       {/* Text Response Alert Popup */}

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Download, ChevronLeft, ChevronRight, Play } from 'lucide-react'
+import { Download, ChevronLeft, ChevronRight, Play, Upload } from 'lucide-react'
 import Image from 'next/image'
 
 interface GeneratedResultsProps {
@@ -27,6 +27,7 @@ interface GeneratedResultsProps {
     total: number
     message: string
   } | null
+  onUseAsInput?: (imageUrl: string) => void
 }
 
 export function GeneratedResults({
@@ -37,7 +38,8 @@ export function GeneratedResults({
   storyText = '',
   metadata = null,
   onIndexChange,
-  generationProgress = null
+  generationProgress = null,
+  onUseAsInput
 }: GeneratedResultsProps) {
   const hasImages = images.length > 0
   const totalImages = images.length
@@ -90,7 +92,7 @@ export function GeneratedResults({
 
   return (
     <>
-    <Card className="border-orange-100 h-full">
+    <Card className="border-orange-100">
       <CardHeader className="pb-3">
         <CardTitle className="text-base text-orange-700 flex items-center justify-between">
           <span>🎨 Generated Scenes</span>
@@ -232,6 +234,21 @@ export function GeneratedResults({
           >
             <Download className="h-4 w-4 mr-2" />
             Download
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!hasImages || !onUseAsInput}
+            className="flex-1 border-blue-200 hover:bg-blue-50"
+            onClick={() => {
+              if (hasImages && onUseAsInput) {
+                onUseAsInput(images[currentIndex])
+                console.log('📤 [USE AS INPUT] Image transferred to input')
+              }
+            }}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Use as Input
           </Button>
           <Button
             size="sm"

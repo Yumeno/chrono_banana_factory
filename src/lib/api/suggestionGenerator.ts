@@ -3,7 +3,7 @@ import { UploadedImage } from '@/types'
 export interface SuggestionRequest {
   currentText: string
   images: UploadedImage[]
-  mode?: 'story' | 'scene' | 'auto'
+  mode?: 'story' | 'scene' | 'moment' | 'auto'
 }
 
 export interface SuggestionResponse {
@@ -50,6 +50,25 @@ Analyze the user's input text and the content of their images. Create a detailed
 - Specify camera angles and movements
 - If the user requests only one scene, create a single scene with a single shot and do not switch shots
 - If reference images are provided, describe how they should be used in the video`
+
+const MOMENT_PROMPT = `# Objective:
+To generate a detailed image generation prompt for a single moment/scene, based on the user's input text and reference images.
+
+# Instructions:
+Output only the core descriptive text without any prefaces, notes, questions, or explanations. Provide only the detailed description. Do not generate images. Language: English.
+
+# Method:
+Analyze the user's input text and reference images. Create a rich, detailed description of a single image that captures the essence of the user's request.
+
+# Important:
+- Focus on ONE single image/moment only
+- Describe visual elements in great detail: composition, lighting, colors, textures, atmosphere
+- Include specific details about characters, objects, environment, and mood
+- Specify artistic style, camera angle, and visual perspective
+- If reference images are provided, seamlessly incorporate their visual elements
+- Use vivid, precise language suitable for image generation
+- Include details about foreground, middle ground, and background elements
+- Describe the emotional tone and ambiance of the scene`
 
 export class SuggestionGenerator {
   /**
@@ -114,9 +133,16 @@ export class SuggestionGenerator {
   /**
    * Build the complete prompt with user input
    */
-  private buildPrompt(userText: string, images: UploadedImage[], mode: 'story' | 'scene'): string {
+  private buildPrompt(userText: string, images: UploadedImage[], mode: 'story' | 'scene' | 'moment'): string {
     // Select appropriate prompt template
-    const basePrompt = mode === 'scene' ? VIDEO_SCENE_PROMPT : STORY_PROMPT
+    let basePrompt: string
+    if (mode === 'scene') {
+      basePrompt = VIDEO_SCENE_PROMPT
+    } else if (mode === 'moment') {
+      basePrompt = MOMENT_PROMPT
+    } else {
+      basePrompt = STORY_PROMPT
+    }
     let prompt = basePrompt + '\n\n'
     
     // Add user context
@@ -141,10 +167,17 @@ export class SuggestionGenerator {
   }
   
   /**
-   * Auto-detect whether user wants a story or scene
+   * Auto-detect whether user wants a story, scene, or moment
    */
-  private detectMode(text: string): 'story' | 'scene' {
+  private detectMode(text: string): 'story' | 'scene' | 'moment' {
     const lowerText = text.toLowerCase()
+    
+    // Moment indicators (single image focus)
+    const momentKeywords = [
+      'moment', 'image', 'picture', 'portrait', 'landscape',
+      'photograph', 'illustration', 'artwork', 'painting', 'single',
+      'snapshot', 'capture'
+    ]
     
     // Scene indicators
     const sceneKeywords = [
@@ -160,6 +193,10 @@ export class SuggestionGenerator {
       'character', 'plot'
     ]
     
+    const momentScore = momentKeywords.filter(keyword => 
+      lowerText.includes(keyword)
+    ).length
+    
     const sceneScore = sceneKeywords.filter(keyword => 
       lowerText.includes(keyword)
     ).length
@@ -168,8 +205,14 @@ export class SuggestionGenerator {
       lowerText.includes(keyword)
     ).length
     
-    // Default to story if unclear
-    return sceneScore > storyScore ? 'scene' : 'story'
+    // Determine mode based on highest score
+    if (momentScore > sceneScore && momentScore > storyScore) {
+      return 'moment'
+    } else if (sceneScore > storyScore) {
+      return 'scene'
+    } else {
+      return 'story'
+    }
   }
 }
 
