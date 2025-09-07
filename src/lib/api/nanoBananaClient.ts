@@ -389,9 +389,14 @@ Or create .env.local file:
     console.log('🖼️ [SUGGESTION API] Images:', request.images?.length || 0)
     
     try {
-      // Use Gemini 2.5 Flash Lite for text generation (newest lightweight model)
+      // Use Gemini 2.5 Flash for text generation when images are present
+      // Use Lite model only for text-only requests
+      const modelName = request.images && request.images.length > 0 
+        ? 'gemini-2.0-flash-exp'  // Full model for image analysis
+        : 'gemini-2.5-flash-lite'  // Lite model for text-only
+      
       const model = this.ai.getGenerativeModel({ 
-        model: 'gemini-2.5-flash-lite',
+        model: modelName,
         generationConfig: {
           temperature: 0.8,
           topK: 40,
@@ -428,10 +433,11 @@ Or create .env.local file:
       }
       
       console.log('✅ [SUGGESTION API] Generated text length:', text.length)
+      console.log('🤖 [SUGGESTION API] Model used:', modelName)
       
       return {
         suggestion: text,
-        model: 'gemini-2.5-flash-lite',
+        model: modelName,
         metadata: {
           processingTime: Date.now() - this.lastRequestTime,
           outputLength: text.length
