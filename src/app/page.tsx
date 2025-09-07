@@ -163,7 +163,8 @@ export default function Home() {
           oil: '\nRender as a rich oil painting with thick textures and deep colors.',
           '3dcg': '\nRender as a high-quality 3D CGI with realistic lighting and materials.',
           anime: '\nRender in Japanese anime art style with vibrant colors and expressive characters.',
-          manga: '\nRender in Japanese manga art style with black and white ink, dramatic shading and speed lines.'
+          manga: '\nRender in Japanese manga art style with black and white ink, dramatic shading and speed lines.',
+          figure: '\nRender as a miniature figure diorama with tilt-shift photography effect, shallow depth of field, and toy-like appearance.'
         }
         artStyleSuffix = styleMap[selectedArtStyle]
       }

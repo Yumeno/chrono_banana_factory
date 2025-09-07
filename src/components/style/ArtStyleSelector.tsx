@@ -1,10 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Palette } from 'lucide-react'
+import { Palette, ChevronDown, ChevronUp } from 'lucide-react'
 
-export type ArtStyle = 'manual' | 'photo' | 'watercolor' | 'oil' | '3dcg' | 'anime' | 'manga'
+export type ArtStyle = 'manual' | 'photo' | 'watercolor' | 'oil' | '3dcg' | 'anime' | 'manga' | 'figure'
 
 interface ArtStyleSelectorProps {
   selectedStyle: ArtStyle
@@ -13,25 +14,39 @@ interface ArtStyleSelectorProps {
 
 const artStyles = [
   { value: 'manual' as ArtStyle, label: 'Manual', icon: '✏️' },
-  { value: 'photo' as ArtStyle, label: '写真', icon: '📷' },
-  { value: 'watercolor' as ArtStyle, label: '水彩画', icon: '🎨' },
-  { value: 'oil' as ArtStyle, label: '油彩画', icon: '🖼️' },
-  { value: '3dcg' as ArtStyle, label: '3DCG', icon: '🎮' },
-  { value: 'anime' as ArtStyle, label: 'アニメ', icon: '✨' },
-  { value: 'manga' as ArtStyle, label: 'マンガ', icon: '💫' }
+  { value: 'photo' as ArtStyle, label: 'Photo', icon: '📷' },
+  { value: 'watercolor' as ArtStyle, label: 'Watercolor', icon: '🎨' },
+  { value: 'oil' as ArtStyle, label: 'Oil Paint', icon: '🖼️' },
+  { value: '3dcg' as ArtStyle, label: '3D CG', icon: '🎮' },
+  { value: 'anime' as ArtStyle, label: 'Anime', icon: '✨' },
+  { value: 'manga' as ArtStyle, label: 'Manga', icon: '💫' },
+  { value: 'figure' as ArtStyle, label: 'Figure', icon: '🎪' }
 ]
 
 export function ArtStyleSelector({ selectedStyle, onStyleChange }: ArtStyleSelectorProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  
+  // Find current style label
+  const currentStyleLabel = artStyles.find(s => s.value === selectedStyle)?.label || 'Manual'
+  
   return (
     <Card className="border-purple-100">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm text-purple-700 flex items-center gap-2">
-          <Palette className="h-4 w-4" />
-          Art Style
+      <CardHeader 
+        className="pb-2 cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <CardTitle className="text-sm text-purple-700 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Palette className="h-4 w-4" />
+            Art Style
+            <span className="text-xs text-gray-500 ml-1">({currentStyleLabel})</span>
+          </div>
+          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-4 gap-2">
+      {isExpanded && (
+        <CardContent>
+          <div className="grid grid-cols-4 gap-2">
           {artStyles.map((style) => (
             <Button
               key={style.value}
@@ -54,15 +69,17 @@ export function ArtStyleSelector({ selectedStyle, onStyleChange }: ArtStyleSelec
         
         {/* Style description */}
         <div className="mt-2 text-xs text-gray-600">
-          {selectedStyle === 'manual' && 'プロンプトで直接指定'}
-          {selectedStyle === 'photo' && 'リアルな写真風'}
-          {selectedStyle === 'watercolor' && '柔らかい水彩画風'}
-          {selectedStyle === 'oil' && '重厚な油彩画風'}
-          {selectedStyle === '3dcg' && '3Dレンダリング風'}
-          {selectedStyle === 'anime' && '日本のアニメ風'}
-          {selectedStyle === 'manga' && '日本のマンガ風'}
+          {selectedStyle === 'manual' && 'Specify directly in prompt'}
+          {selectedStyle === 'photo' && 'Realistic photographic style'}
+          {selectedStyle === 'watercolor' && 'Soft watercolor painting style'}
+          {selectedStyle === 'oil' && 'Rich oil painting style'}
+          {selectedStyle === '3dcg' && '3D rendering style'}
+          {selectedStyle === 'anime' && 'Japanese anime style'}
+          {selectedStyle === 'manga' && 'Japanese manga style'}
+          {selectedStyle === 'figure' && 'Miniature figure/diorama style'}
         </div>
       </CardContent>
+      )}
     </Card>
   )
 }
