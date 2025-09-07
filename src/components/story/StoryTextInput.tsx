@@ -44,14 +44,20 @@ export function StoryTextInput({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="min-h-[120px] resize-none"
-          rows={6}
-          disabled={isGeneratingSuggestion}
-        />
+        <div className="relative">
+          <Textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="min-h-[120px] resize-none pt-6"
+            rows={6}
+            disabled={isGeneratingSuggestion}
+          />
+          {/* Word count - positioned at top-left inside textarea */}
+          <div className="absolute top-1 left-2 text-xs text-gray-400">
+            {value.length} chars • {value.trim() ? value.trim().split(/\s+/).length : 0} words
+          </div>
+        </div>
         
         {/* Quick Ideas */}
         <div className="flex flex-wrap gap-2">
@@ -66,12 +72,6 @@ export function StoryTextInput({
               {idea.label}
             </Button>
           ))}
-        </div>
-        
-        {/* Word count */}
-        <div className="flex justify-between items-center text-sm text-gray-500">
-          <span>{value.length} characters</span>
-          <span>{value.trim() ? value.trim().split(/\s+/).length : 0} words</span>
         </div>
 
         {/* Error display */}
