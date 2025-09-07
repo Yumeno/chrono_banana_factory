@@ -5,6 +5,7 @@
 ## Overview
 
 Chrono Banana Factory is an innovative tool that generates a series of images representing the passage of time. Leveraging the nanobanana API (Google Gemini 2.5 Flash Image Preview API), it enables easy creation of sequential images for storytelling and video production.
+- Youtube Demo: https://youtu.be/J9vOnQtag1Q
 
 ## Use Cases
 
