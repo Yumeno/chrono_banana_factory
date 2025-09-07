@@ -36,6 +36,7 @@ Analyze the user's input text and the content of their images. Create and descri
 - If reference images are provided:
   * USE the visual appearance of characters, objects, and backgrounds from the images
   * BUT IMAGINE new poses, expressions, and actions appropriate for each scene
+  * Integrate them into the story: characters as protagonists/supporting cast, landscapes as settings/stages, props as story elements
   * Specify dynamic camera angles and compositions that enhance the narrative
   * Design appropriate lighting (time of day, mood, shadows, highlights) for each scene
   * Avoid simply describing the reference images as-is; transform them into story scenes`
@@ -57,6 +58,7 @@ Analyze the user's input text and the content of their images. Create a detailed
 - If reference images are provided:
   * USE the character designs and environmental elements from the images
   * BUT CREATE new dynamic poses, expressions, and movements for the video
+  * Integrate them into the video: characters as actors, landscapes as locations, objects as props in action
   * Design camera work that brings the static references to life
   * Specify lighting changes (dramatic shadows, backlighting, color temperature) for cinematic effect
   * Describe how characters should move, emote, and interact in each shot`
@@ -78,6 +80,7 @@ Analyze the user's input text and reference images. Create a rich, detailed desc
 - If reference images are provided:
   * USE the character appearances and visual styles from the images
   * BUT REIMAGINE them in new poses, expressions, and situations
+  * Integrate them meaningfully: characters as subjects, environments as settings, items as focal elements
   * Create fresh compositions and camera angles that differ from the references
   * Describe specific lighting conditions (golden hour, dramatic spotlight, soft diffused light, etc.)
   * Transform static references into a dynamic, narrative moment
@@ -171,8 +174,11 @@ export class SuggestionGenerator {
     if (images.length > 0) {
       prompt += `# Reference Images:\n`
       prompt += `The user has provided ${images.length} reference image(s). `
-      prompt += `IMPORTANT: Use the character designs, objects, and environmental elements from these images, `
-      prompt += `but CREATIVELY REIMAGINE them with new poses, expressions, actions, camera angles, and lighting appropriate for each scene. `
+      prompt += `IMPORTANT: Integrate these images meaningfully into the narrative - `
+      prompt += `if they show characters, make them the protagonists or supporting cast; `
+      prompt += `if they show landscapes, use them as backgrounds or settings; `
+      prompt += `if they show objects, incorporate them as props or story elements. `
+      prompt += `CREATIVELY REIMAGINE them with new poses, expressions, actions, camera angles, and lighting appropriate for each scene. `
       prompt += `Consider time of day, mood lighting, shadows, and atmospheric effects. `
       prompt += `DO NOT simply describe the images as they appear - transform them into dynamic narrative moments.\n\n`
     }
