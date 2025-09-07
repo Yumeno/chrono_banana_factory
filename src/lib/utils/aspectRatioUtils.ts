@@ -55,7 +55,8 @@ export function getAspectRatioPromptSuffix(ratio: AspectRatio): string {
     return '' // No suffix for auto mode
   }
 
-  return ' Maintain the aspect ratio of the last reference white blank image.'
+  const config = aspectRatioPresets[ratio]
+  return ` Generate images in ${config.width}x${config.height} resolution matching the aspect ratio of the last reference white blank image. Strictly maintain this ${ratio} aspect ratio.`
 }
 
 /**
