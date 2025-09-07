@@ -1,7 +1,4 @@
-/**
- * Aspect Ratio Control Utilities
- * Uses pre-made white blank images to control Gemini API output resolution
- */
+// Phase 2.7: Aspect Ratio Control Utilities
 
 export type AspectRatio = 'auto' | '1:1' | '16:9' | '4:3' | '3:4' | '9:16'
 
@@ -50,7 +47,6 @@ export const aspectRatioPresets: Record<AspectRatio, AspectRatioConfig> = {
   }
 }
 
-
 /**
  * Get aspect ratio prompt suffix for white image approach
  */
@@ -95,21 +91,15 @@ export async function getWhiteBlankImageData(ratio: AspectRatio): Promise<{ base
   
   try {
     // Generate white blank image using canvas
+    console.log(`🎨 Generating white blank image: ${config.width}x${config.height}`)
     const base64 = generateWhiteBlankImage(config.width, config.height)
-    console.log(`🎨 [WHITE BLANK] Generated ${config.width}x${config.height} image (${(base64.length / 1024).toFixed(1)}KB)`)
+    
     return {
       base64,
       mimeType: 'image/png'
     }
   } catch (error) {
-    console.error('❌ [WHITE BLANK] Generation failed:', error)
+    console.error('Failed to generate white blank image:', error)
     return null
   }
-}
-
-/**
- * Get aspect ratio dimensions for display
- */
-export function getAspectRatioDimensions(ratio: AspectRatio) {
-  return aspectRatioPresets[ratio]
 }

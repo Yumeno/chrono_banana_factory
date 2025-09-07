@@ -1,26 +1,52 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Download, ChevronLeft, ChevronRight, Play } from 'lucide-react'
 import Image from 'next/image'
-import { MigratedComponentTest } from '@/components/test/MigratedComponentTest'
 
 interface GeneratedResultsProps {
-  // Placeholder props for future integration
+  // Props for image generation
   images?: string[]
   currentIndex?: number
   isLoading?: boolean
+  onGenerate?: (prompt: string, aspectRatio: string) => Promise<void>
+  storyText?: string
+  metadata?: {
+    prompt: string
+    aspectRatio: string
+    model: string
+    timestamp: Date
+  } | null
 }
 
 export function GeneratedResults({
   images = [],
   currentIndex = 0,
-  isLoading = false
+  isLoading = false,
+  onGenerate,
+  storyText = '',
+  metadata = null
 }: GeneratedResultsProps) {
   const hasImages = images.length > 0
   const totalImages = images.length
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState('auto')
+  const [actualImageSize, setActualImageSize] = useState<{ width: number; height: number } | null>(null)
+
+  // Measure actual image dimensions when it loads
+  useEffect(() => {
+    if (hasImages && images[currentIndex]) {
+      const img = new window.Image()
+      img.onload = () => {
+        setActualImageSize({ width: img.width, height: img.height })
+        console.log('📏 [IMAGE SIZE] Actual dimensions:', img.width, 'x', img.height)
+      }
+      img.src = images[currentIndex]
+    }
+  }, [images, currentIndex, hasImages])
 
   return (
     <Card className="border-orange-100 h-full">
@@ -94,6 +120,24 @@ export function GeneratedResults({
           </div>
         )}
 
+        {/* Aspect Ratio Selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Aspect Ratio:</span>
+          <Select value={selectedAspectRatio} onValueChange={setSelectedAspectRatio}>
+            <SelectTrigger className="w-32 h-8 text-sm bg-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              <SelectItem value="auto">Auto (Default)</SelectItem>
+              <SelectItem value="1:1">1:1 Square</SelectItem>
+              <SelectItem value="16:9">16:9 Landscape</SelectItem>
+              <SelectItem value="9:16">9:16 Portrait</SelectItem>
+              <SelectItem value="4:3">4:3 Classic</SelectItem>
+              <SelectItem value="3:4">3:4 Portrait</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Action Buttons */}
         <div className="flex gap-2">
           <Button
@@ -107,33 +151,86 @@ export function GeneratedResults({
           </Button>
           <Button
             size="sm"
-            disabled // Placeholder - no generation logic yet
+            disabled={isLoading || !storyText.trim() || !onGenerate}
             className="flex-1 bg-orange-500 hover:bg-orange-600"
+            onClick={() => onGenerate?.(storyText, selectedAspectRatio)}
           >
-            🎬 Generate Scene
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Generating...
+              </>
+            ) : (
+              <>🎬 Generate Scene</>
+            )}
           </Button>
         </div>
 
-        {/* Metadata Display - Placeholder */}
-        {hasImages && (
+        {/* Metadata Display */}
+        {hasImages && metadata && (
           <div className="pt-2 border-t border-orange-100">
             <details className="text-sm">
               <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
                 Generation Details
               </summary>
-              <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
-                <p>Prompt: (Generated prompt will appear here)</p>
-                <p>Model: Gemini 2.5 Flash Image Preview</p>
-                <p>Time: Just now</p>
+              <div className="mt-2 p-3 bg-gray-50 rounded space-y-2 text-xs">
+                <div>
+                  <span className="font-semibold text-gray-700">Prompt:</span>
+                  <p className="text-gray-600 mt-1">{metadata.prompt}</p>
+                </div>
+                <div className="flex gap-4">
+                  <div>
+                    <span className="font-semibold text-gray-700">Aspect Ratio:</span>
+                    <span className="text-gray-600 ml-1">
+                      {metadata.aspectRatio === 'auto' ? 'Auto' : metadata.aspectRatio}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Resolution:</span>
+                    <span className="text-gray-600 ml-1">
+                      {actualImageSize 
+                        ? `${actualImageSize.width}x${actualImageSize.height}`
+                        : 'Loading...'}
+                    </span>
+                  </div>
+                  {actualImageSize && (
+                    <div>
+                      <span className="font-semibold text-gray-700">Actual Ratio:</span>
+                      <span className="text-gray-600 ml-1">
+                        {(() => {
+                          const gcd = (a: number, b: number): number => b === 0 ? a : gcd(b, a % b)
+                          const divisor = gcd(actualImageSize.width, actualImageSize.height)
+                          const ratioW = actualImageSize.width / divisor
+                          const ratioH = actualImageSize.height / divisor
+                          // Simplify common ratios
+                          if (Math.abs(ratioW / ratioH - 16/9) < 0.01) return '16:9'
+                          if (Math.abs(ratioW / ratioH - 9/16) < 0.01) return '9:16'
+                          if (Math.abs(ratioW / ratioH - 4/3) < 0.01) return '4:3'
+                          if (Math.abs(ratioW / ratioH - 3/4) < 0.01) return '3:4'
+                          if (Math.abs(ratioW / ratioH - 1) < 0.01) return '1:1'
+                          return `${ratioW}:${ratioH}`
+                        })()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-4">
+                  <div>
+                    <span className="font-semibold text-gray-700">Model:</span>
+                    <span className="text-gray-600 ml-1">Gemini 2.5 Flash Image Preview</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Generated:</span>
+                    <span className="text-gray-600 ml-1">
+                      {new Date(metadata.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
               </div>
             </details>
           </div>
         )}
 
-        {/* Migration Test Panel - Development Only */}
-        <div className="pt-4 border-t border-orange-100">
-          <MigratedComponentTest />
-        </div>
       </CardContent>
     </Card>
   )

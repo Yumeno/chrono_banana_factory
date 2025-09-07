@@ -1,10 +1,10 @@
-import { GoogleGenAI } from '@google/genai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { ImageGenerationRequest, GeneratedImage, ImageEditRequest, TimelineResponse, ContentPart } from '@/types'
 import { getEnvironmentVariable, getEnvironmentDebugInfo } from '@/lib/env'
 
 class NanoBananaClient {
   private readonly apiKey: string
-  private readonly ai: GoogleGenAI
+  private readonly ai: GoogleGenerativeAI
   private lastRequestTime = 0
   private readonly rateLimitDelay = 8000 // 8 seconds between requests
 
@@ -16,13 +16,23 @@ class NanoBananaClient {
       throw new Error(this.getDetailedErrorMessage())
     }
     this.apiKey = apiKey
-    this.ai = new GoogleGenAI({ apiKey: this.apiKey })
+    this.ai = new GoogleGenerativeAI(this.apiKey) // 正しい初期化方法
   }
 
   private getApiKey(): string | undefined {
-    // より確実な環境変数取得ユーティリティを使用
-    const apiKey = getEnvironmentVariable('GEMINI_API_KEY') || 
-                   getEnvironmentVariable('NEXT_PUBLIC_GEMINI_API_KEY')
+    // ブラウザ環境では NEXT_PUBLIC_ プレフィックスが必要
+    const isClient = typeof window !== 'undefined'
+    
+    let apiKey: string | undefined
+    
+    if (isClient) {
+      // クライアントサイドでは NEXT_PUBLIC_ 版のみ利用可能
+      apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+    } else {
+      // サーバーサイドでは両方試行
+      apiKey = getEnvironmentVariable('GEMINI_API_KEY') || 
+               getEnvironmentVariable('NEXT_PUBLIC_GEMINI_API_KEY')
+    }
 
     // デバッグ情報をコンソールに出力（開発時のみ）
     if (process.env.NODE_ENV === 'development') {
@@ -81,12 +91,48 @@ Or create .env.local file:
     this.validateRequest(request)
     await this.enforceRateLimit()
 
-    const response = await this.ai.models.generateContent({
-      model: request.model,
-      contents: request.prompt,
-    })
+    console.log('📤 [API REQUEST] Starting image generation')
+    console.log('📝 [PROMPT] Text:', request.prompt)
+    
+    // Check if we have images to include
+    if (request.images && request.images.length > 0) {
+      console.log('🖼️ [IMAGES] Sending', request.images.length, 'reference images:')
+      
+      // Build contents array with text prompt and images
+      const contents = [
+        { text: request.prompt },
+        ...request.images.map((img, index) => {
+          // Use base64 property for UploadedImage type
+          const imageData = img.base64 || (img as any).data
+          const imageName = img.name || 'unnamed'
+          console.log(`  ${index + 1}. ${imageName} (${img.mimeType}, ${Math.round(imageData.length / 1024)}KB)`)
+          return {
+            inlineData: {
+              mimeType: img.mimeType,
+              data: imageData
+            }
+          }
+        })
+      ]
+      
+      console.log('📊 [ORDER] Final content order:')
+      console.log('  1. Text prompt')
+      request.images.forEach((img, i) => {
+        const isWhiteBlank = img.name?.includes('white-blank')
+        console.log(`  ${i + 2}. ${isWhiteBlank ? '⬜ WHITE BLANK' : '🖼️ USER IMAGE'}: ${img.name}`)
+      })
 
-    return this.parseResponse(response, request)
+      const model = this.ai.getGenerativeModel({ model: request.model })
+      const response = await model.generateContent(contents)
+      
+      return this.parseResponse(response, request)
+    } else {
+      console.log('🖼️ [IMAGES] No reference images')
+      const model = this.ai.getGenerativeModel({ model: request.model })
+      const response = await model.generateContent(request.prompt)
+      
+      return this.parseResponse(response, request)
+    }
   }
 
   async editImage(request: ImageEditRequest): Promise<GeneratedImage> {
@@ -116,10 +162,8 @@ Or create .env.local file:
       return `${index}: unknown`
     }))
 
-    const response = await this.ai.models.generateContent({
-      model: request.model,
-      contents: contents,
-    })
+    const model = this.ai.getGenerativeModel({ model: request.model })
+    const response = await model.generateContent(contents)
 
     return this.parseResponse(response, request)
   }
@@ -170,51 +214,59 @@ Or create .env.local file:
   }
 
 
-  private parseResponse(response: unknown, request: ImageGenerationRequest | ImageEditRequest): GeneratedImage {
-    // 公式SDKのレスポンス形式に対応
-    const typedResponse = response as {
-      candidates?: Array<{
-        content?: {
-          parts?: Array<{
-            text?: string
-            inlineData?: {
-              mimeType: string
-              data: string
-            }
-          }>
-        }
-      }>
-    }
+  private parseResponse(response: any, request: ImageGenerationRequest | ImageEditRequest): GeneratedImage {
+    // Log the raw response for debugging
+    console.log('🔍 Raw API Response:', JSON.stringify(response, null, 2))
     
-    if (!typedResponse?.candidates?.[0]?.content?.parts) {
-      throw new Error('Invalid API response format: missing candidates or content')
+    // Handle response from GoogleGenerativeAI SDK
+    const result = response.response || response
+    
+    if (!result) {
+      throw new Error('No response data received from API')
     }
 
-    for (const part of typedResponse.candidates[0].content.parts) {
-      if (part.inlineData) {
-        const { mimeType, data } = part.inlineData
+    // Try to get text content from the response
+    let textContent = ''
+    try {
+      textContent = result.text?.() || ''
+    } catch (e) {
+      console.log('Could not extract text from response:', e)
+    }
 
-        if (!mimeType || !data) {
-          throw new Error('Invalid image data in API response')
-        }
+    // Check if response contains candidates with parts
+    if (result.candidates?.[0]?.content?.parts) {
+      for (const part of result.candidates[0].content.parts) {
+        // Check for inline data (base64 encoded image)
+        if (part.inlineData) {
+          const { mimeType, data } = part.inlineData
 
-        const imageUrl = `data:${mimeType};base64,${data}`
+          if (!mimeType || !data) {
+            throw new Error('Invalid image data in API response')
+          }
 
-        return {
-          id: this.generateId(),
-          imageUrl,
-          prompt: request.prompt,
-          model: request.model,
-          createdAt: new Date(),
-          metadata: {
-            mimeType,
-            processingTime: Date.now() - this.lastRequestTime
+          const imageUrl = `data:${mimeType};base64,${data}`
+
+          return {
+            id: this.generateId(),
+            imageUrl,
+            prompt: request.prompt,
+            model: request.model,
+            createdAt: new Date(),
+            metadata: {
+              mimeType,
+              processingTime: Date.now() - this.lastRequestTime
+            }
           }
         }
       }
     }
 
-    throw new Error('No image data found in API response')
+    // If no image data found, but we have text, it might be an error or different response
+    if (textContent) {
+      throw new Error(`API returned text instead of image: ${textContent.substring(0, 200)}`)
+    }
+
+    throw new Error('No image data found in API response. The model may not support image generation.')
   }
 
   // Phase 2.5: Parse multi-modal response into timeline format
@@ -289,10 +341,8 @@ Or create .env.local file:
     this.validateRequest(request)
     await this.enforceRateLimit()
 
-    const response = await this.ai.models.generateContent({
-      model: request.model,
-      contents: request.prompt,
-    })
+    const model = this.ai.getGenerativeModel({ model: request.model })
+    const response = await model.generateContent(request.prompt)
 
     return this.parseTimelineResponse(response, request)
   }
@@ -336,10 +386,8 @@ Or create .env.local file:
       }
 
       // Simple test request with minimal prompt
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
-        contents: 'test image of a simple red dot',
-      })
+      const model = this.ai.getGenerativeModel({ model: 'gemini-2.5-flash-image-preview' })
+      const response = await model.generateContent('test image of a simple red dot')
 
       // Check if response contains image data
       const testResponse = response as {
@@ -415,6 +463,11 @@ let _nanoBananaClient: NanoBananaClient | null = null
 export const nanoBananaClient = {
   // 実際の使用時に初期化
   get instance(): NanoBananaClient {
+    // Only initialize on client side to avoid hydration issues
+    if (typeof window === 'undefined') {
+      throw new Error('nanoBananaClient can only be used on the client side')
+    }
+    
     if (!_nanoBananaClient) {
       _nanoBananaClient = new NanoBananaClient()
     }
@@ -436,6 +489,7 @@ export const nanoBananaClient = {
 
   isReady(): boolean {
     try {
+      if (typeof window === 'undefined') return false
       return this.instance.isReady()
     } catch {
       return false
@@ -444,6 +498,9 @@ export const nanoBananaClient = {
 
   validateApiKey(): { valid: boolean; message: string } {
     try {
+      if (typeof window === 'undefined') {
+        return { valid: false, message: 'Server-side validation not supported' }
+      }
       return this.instance.validateApiKey()
     } catch {
       return { valid: false, message: 'Client initialization failed' }
@@ -452,6 +509,9 @@ export const nanoBananaClient = {
 
   async testConnection(): Promise<{ success: boolean; message: string; details?: unknown }> {
     try {
+      if (typeof window === 'undefined') {
+        return { success: false, message: 'Server-side connection test not supported' }
+      }
       return await this.instance.testConnection()
     } catch (error) {
       return { 
@@ -464,13 +524,23 @@ export const nanoBananaClient = {
 
   getDebugInfo(): Record<string, unknown> {
     try {
+      if (typeof window === 'undefined') {
+        return {
+          error: 'Server-side debug info not supported',
+          environment: {
+            platform: 'server',
+            nodeEnv: process.env.NODE_ENV,
+            isServer: true
+          }
+        }
+      }
       return this.instance.getDebugInfo()
     } catch (error) {
       return {
         error: 'Failed to initialize client',
         details: error instanceof Error ? error.message : 'Unknown error',
         environment: {
-          platform: process.platform,
+          platform: typeof window === 'undefined' ? 'server' : 'browser',
           nodeEnv: process.env.NODE_ENV,
           isServer: typeof window === 'undefined'
         }
@@ -480,6 +550,9 @@ export const nanoBananaClient = {
 
   getRateLimitStatus(): { canMakeRequest: boolean; waitTime: number } {
     try {
+      if (typeof window === 'undefined') {
+        return { canMakeRequest: false, waitTime: 0 }
+      }
       return this.instance.getRateLimitStatus()
     } catch {
       return { canMakeRequest: false, waitTime: 0 }
