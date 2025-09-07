@@ -6,6 +6,7 @@ import { StoryTextInput } from '@/components/story/StoryTextInput'
 import { TimePointControls } from '@/components/time/TimePointControls'
 import { GeneratedResults } from '@/components/results/GeneratedResults'
 import { ImageUpload } from '@/components/upload/ImageUpload'
+import { ArtStyleSelector, type ArtStyle } from '@/components/style/ArtStyleSelector'
 import { nanoBananaClient } from '@/lib/api/nanoBananaClient'
 import { suggestionGenerator } from '@/lib/api/suggestionGenerator'
 import { getAspectRatioPromptSuffix, getWhiteBlankImageData, aspectRatioPresets } from '@/lib/utils/aspectRatioUtils'
@@ -23,6 +24,7 @@ export default function Home() {
   const [textResponse, setTextResponse] = useState<string | null>(null)
   const [showTextAlert, setShowTextAlert] = useState(false)
   const [imageCount, setImageCount] = useState(1)
+  const [selectedArtStyle, setSelectedArtStyle] = useState<ArtStyle>('manual')
   const [generationProgress, setGenerationProgress] = useState<{
     current: number
     total: number
@@ -151,9 +153,25 @@ export default function Home() {
       console.log('⏰ [TIME CONTROL] Mode:', mode, 'Value:', value, 'Unit:', unit, 'Images:', imageCount)
       console.log('📝 [TIME SUFFIX]:', timeControlSuffix)
 
-      // Phase 2.7: Prepare prompt with time control and aspect ratio suffix
+      // Art style suffix
+      let artStyleSuffix = ''
+      if (selectedArtStyle !== 'manual') {
+        const styleMap: Record<ArtStyle, string> = {
+          manual: '',
+          photo: '\nRender as a photorealistic photograph.',
+          watercolor: '\nRender as a soft watercolor painting with flowing colors and gentle brushstrokes.',
+          oil: '\nRender as a rich oil painting with thick textures and deep colors.',
+          '3dcg': '\nRender as a high-quality 3D CGI with realistic lighting and materials.',
+          anime: '\nRender in Japanese anime art style with vibrant colors and expressive characters.',
+          manga: '\nRender in Japanese manga art style with black and white ink, dramatic shading and speed lines.'
+        }
+        artStyleSuffix = styleMap[selectedArtStyle]
+      }
+      console.log('🎨 [ART STYLE]:', selectedArtStyle, artStyleSuffix)
+
+      // Phase 2.7: Prepare prompt with time control, art style and aspect ratio suffix
       const aspectRatioSuffix = getAspectRatioPromptSuffix(aspectRatio)
-      const finalPrompt = prompt.trim() + timeControlSuffix + aspectRatioSuffix
+      const finalPrompt = prompt.trim() + timeControlSuffix + artStyleSuffix + aspectRatioSuffix
       
       console.log('📝 [FINAL PROMPT]:', finalPrompt)
       
@@ -240,6 +258,7 @@ export default function Home() {
           model: 'gemini-2.5-flash-image-preview',
           timestamp: new Date(),
           timeControlSuffix: timeControlSuffix,
+          artStyleSuffix: artStyleSuffix,
           aspectRatioSuffix: aspectRatioSuffix
         })
         setTextResponse(null)
@@ -255,6 +274,7 @@ export default function Home() {
           model: 'gemini-2.5-flash-image-preview',
           timestamp: new Date(),
           timeControlSuffix: timeControlSuffix,
+          artStyleSuffix: artStyleSuffix,
           aspectRatioSuffix: aspectRatioSuffix
         })
         setTextResponse(null)
@@ -366,6 +386,11 @@ export default function Home() {
         onGenerateSuggestion={handleGenerateSuggestion}
         isGeneratingSuggestion={isGeneratingSuggestion}
         suggestionError={suggestionError}
+      />
+      
+      <ArtStyleSelector
+        selectedStyle={selectedArtStyle}
+        onStyleChange={setSelectedArtStyle}
       />
       
       <ImageUpload

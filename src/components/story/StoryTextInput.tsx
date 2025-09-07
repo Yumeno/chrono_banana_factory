@@ -25,6 +25,17 @@ export function StoryTextInput({
   suggestionError = null
 }: StoryTextInputProps) {
   const [enhanceMode, setEnhanceMode] = useState<'story' | 'video' | 'moment'>('story')
+  
+  // サンプルアイデア
+  const sampleIdeas = [
+    { label: "🐱 Cat Adventure", text: "A curious orange cat discovers a magical portal in the garden that leads to a world made entirely of yarn and catnip" },
+    { label: "🚀 Space Journey", text: "An astronaut floating in space sees Earth from above, with auroras dancing across the poles and city lights twinkling below" },
+    { label: "🌸 Cherry Blossom", text: "A serene Japanese garden in full cherry blossom bloom, with petals gently falling onto a koi pond" },
+    { label: "🏰 Fantasy Castle", text: "A majestic castle on a floating island in the clouds, with waterfalls cascading into the sky below" },
+    { label: "🌊 Ocean Depths", text: "Deep underwater scene with bioluminescent jellyfish illuminating ancient ruins, colorful coral reefs and schools of tropical fish" },
+    { label: "🎭 Cyberpunk City", text: "Neon-lit cyberpunk cityscape at night with flying cars, holographic advertisements, and rain-slicked streets reflecting colorful lights" }
+  ]
+  
   return (
     <Card className="border-orange-100">
       <CardHeader className="pb-3">
@@ -41,6 +52,21 @@ export function StoryTextInput({
           rows={6}
           disabled={isGeneratingSuggestion}
         />
+        
+        {/* Quick Ideas */}
+        <div className="flex flex-wrap gap-2">
+          {sampleIdeas.map((idea, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              size="sm"
+              onClick={() => onChange(idea.text)}
+              className="text-xs border-gray-200 hover:bg-gray-50"
+            >
+              {idea.label}
+            </Button>
+          ))}
+        </div>
         
         {/* Word count */}
         <div className="flex justify-between items-center text-sm text-gray-500">

@@ -200,6 +200,7 @@ export function TimePointControls({
                 <SelectItem value="minutes">min</SelectItem>
                 <SelectItem value="hours">hrs</SelectItem>
                 <SelectItem value="days">days</SelectItem>
+                <SelectItem value="months">mon</SelectItem>
                 <SelectItem value="years">yrs</SelectItem>
               </SelectContent>
             </Select>

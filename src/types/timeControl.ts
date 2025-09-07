@@ -8,7 +8,7 @@ export enum TimeMode {
   CUSTOM_PAST = 'customPast'         // 過去の特定時点
 }
 
-export type TimeUnit = 'seconds' | 'minutes' | 'hours' | 'days' | 'years'
+export type TimeUnit = 'seconds' | 'minutes' | 'hours' | 'days' | 'months' | 'years'
 
 export interface TimeControlState {
   mode: TimeMode
@@ -39,6 +39,7 @@ export const timeUnitToEnglish: Record<TimeUnit, string> = {
   minutes: 'minutes',
   hours: 'hours',
   days: 'days',
+  months: 'months',
   years: 'years'
 }
 

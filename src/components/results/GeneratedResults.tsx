@@ -21,6 +21,7 @@ interface GeneratedResultsProps {
     model: string
     timestamp: Date
     timeControlSuffix?: string
+    artStyleSuffix?: string
     aspectRatioSuffix?: string
   } | null
   onIndexChange?: (index: number) => void
@@ -286,6 +287,14 @@ export function GeneratedResults({
                     <>
                       <span className="font-semibold text-blue-700 mt-2 block">Time Control (Auto-added):</span>
                       <p className="text-blue-600 mt-1 italic">{metadata.timeControlSuffix}</p>
+                    </>
+                  )}
+                  
+                  {/* Art Style Suffix */}
+                  {metadata.artStyleSuffix && (
+                    <>
+                      <span className="font-semibold text-purple-700 mt-2 block">Art Style (Auto-added):</span>
+                      <p className="text-purple-600 mt-1 italic">{metadata.artStyleSuffix}</p>
                     </>
                   )}
                   
