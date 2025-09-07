@@ -254,19 +254,37 @@ Or create .env.local file:
             createdAt: new Date(),
             metadata: {
               mimeType,
-              processingTime: Date.now() - this.lastRequestTime
+              processingTime: Date.now() - this.lastRequestTime,
+              // Include text content if any (for mixed responses)
+              textResponse: textContent || undefined
             }
           }
         }
       }
     }
 
-    // If no image data found, but we have text, it might be an error or different response
+    // If we only have text, return a special response indicating text-only
     if (textContent) {
-      throw new Error(`API returned text instead of image: ${textContent.substring(0, 200)}`)
+      console.log('📝 [TEXT RESPONSE] API returned text instead of image')
+      console.log('Text content:', textContent)
+      
+      // Return a text-only response that the UI can handle
+      return {
+        id: this.generateId(),
+        imageUrl: '', // Empty string to indicate no image
+        prompt: request.prompt,
+        model: request.model,
+        createdAt: new Date(),
+        metadata: {
+          mimeType: 'text/plain',
+          processingTime: Date.now() - this.lastRequestTime,
+          textResponse: textContent,
+          isTextOnly: true
+        }
+      }
     }
 
-    throw new Error('No image data found in API response. The model may not support image generation.')
+    throw new Error('No content found in API response. The request may have been blocked or failed.')
   }
 
   // Phase 2.5: Parse multi-modal response into timeline format

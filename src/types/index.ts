@@ -22,6 +22,8 @@ export interface GeneratedImage {
       width: number;
       height: number;
     };
+    textResponse?: string;
+    isTextOnly?: boolean;
   };
 }
 
