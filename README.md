@@ -128,12 +128,13 @@ Specify concrete time ranges to express changes:
 
 ![Image](https://github.com/user-attachments/assets/edae245b-1fb9-4fe5-9b0c-0aa78268b3f1)
 
-![Image](https://github.com/user-attachments/assets/11d12130-2f0a-4d86-84c2-dbce2d2a4065)
-
 - **Character images**: Used as story protagonists in enhancement
 - **Background images**: Used as scene settings in enhancement
 - **Object images**: Appear as props or important items in enhancement
 - **Reuse generated images**: "Use as Input" adds generated images as references
+
+![Image](https://github.com/user-attachments/assets/11d12130-2f0a-4d86-84c2-dbce2d2a4065)
+
 - **Limit**: Maximum 15 images
 
 ## Project Structure
