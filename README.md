@@ -78,6 +78,8 @@ npm run dev
 
 ### Basic Workflow
 
+![Image](https://github.com/user-attachments/assets/d9732a3f-4047-4fde-aaaf-380c7fa6918d)
+
 1. **Enter story text**: Input your ideas in the text area
 2. **Add reference images**: Upload character or background images if available
 3. **Click Enhance**: Generate enhanced prompts based on your ideas and reference images
@@ -88,6 +90,8 @@ npm run dev
 
 ### Story Enhancement Feature
 
+![Image](https://github.com/user-attachments/assets/ae05d3a1-11b1-4da3-9c21-525c0e0187d9)
+
 AI-powered story generation and improvement:
 
 1. **Story Mode**: Generate narratives with clear scene breaks (for picture books/storyboards)
@@ -97,6 +101,8 @@ AI-powered story generation and improvement:
 When reference images are provided, AI creatively incorporates image elements (characters, backgrounds, objects) into the narrative.
 
 ### Time Control Modes
+
+![Image](https://github.com/user-attachments/assets/7657315b-80b2-4299-88d4-d0dfdfae3ca8)
 
 #### 1. Standard
 - Generates single time point images without temporal elements
@@ -119,6 +125,8 @@ Specify concrete time ranges to express changes:
 - Example: "1 year in 4 images" → Shows seasonal changes
 
 ### Reference Image Usage
+
+![Image](https://github.com/user-attachments/assets/11d12130-2f0a-4d86-84c2-dbce2d2a4065)
 
 - **Character images**: Used as story protagonists in enhancement
 - **Background images**: Used as scene settings in enhancement
@@ -158,6 +166,9 @@ Text input and enhancement functionality
 Time control settings (mode, time range, divisions)
 
 ### ArtStyleSelector
+
+![Image](https://github.com/user-attachments/assets/edae245b-1fb9-4fe5-9b0c-0aa78268b3f1)
+
 Collapsible selector for 7 art styles
 
 ### ImageUploadArea
