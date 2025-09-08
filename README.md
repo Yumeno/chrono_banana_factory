@@ -90,7 +90,7 @@ npm run dev
 
 ### Story Enhancement Feature
 
-![Image](https://github.com/user-attachments/assets/ae05d3a1-11b1-4da3-9c21-525c0e0187d9)
+![Image](https://github.com/user-attachments/assets/84acd6ce-0324-4191-b8de-828bd57b34bf)
 
 AI-powered story generation and improvement:
 
@@ -102,7 +102,7 @@ When reference images are provided, AI creatively incorporates image elements (c
 
 ### Time Control Modes
 
-
+![Image](https://github.com/user-attachments/assets/ae05d3a1-11b1-4da3-9c21-525c0e0187d9)
 
 #### 1. Standard
 - Generates single time point images without temporal elements
