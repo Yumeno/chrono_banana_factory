@@ -102,7 +102,7 @@ When reference images are provided, AI creatively incorporates image elements (c
 
 ### Time Control Modes
 
-![Image](https://github.com/user-attachments/assets/7657315b-80b2-4299-88d4-d0dfdfae3ca8)
+
 
 #### 1. Standard
 - Generates single time point images without temporal elements
@@ -125,6 +125,8 @@ Specify concrete time ranges to express changes:
 - Example: "1 year in 4 images" → Shows seasonal changes
 
 ### Reference Image Usage
+
+![Image](https://github.com/user-attachments/assets/edae245b-1fb9-4fe5-9b0c-0aa78268b3f1)
 
 ![Image](https://github.com/user-attachments/assets/11d12130-2f0a-4d86-84c2-dbce2d2a4065)
 
@@ -167,7 +169,7 @@ Time control settings (mode, time range, divisions)
 
 ### ArtStyleSelector
 
-![Image](https://github.com/user-attachments/assets/edae245b-1fb9-4fe5-9b0c-0aa78268b3f1)
+![Image](https://github.com/user-attachments/assets/7657315b-80b2-4299-88d4-d0dfdfae3ca8)
 
 Collapsible selector for 7 art styles
 
