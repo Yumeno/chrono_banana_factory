@@ -184,18 +184,25 @@ Display and download generated images
 
 ### (Operations)
 
+Press "Cherry Blossom"
 ![Image](https://github.com/user-attachments/assets/2e3d2b30-ee3a-4155-8c50-e4d34a0dd840)
 
+Select "Moment" and Press "Story Enhance"
 ![Image](https://github.com/user-attachments/assets/a0956d8c-6be2-4858-a2cd-58029e281b28)
 
+Select "Art style" as "Watercolor"
 ![Image](https://github.com/user-attachments/assets/edf0efaf-cfc9-4977-909e-d3fef80547ce)
 
+Choose "Time control" like this
 ![Image](https://github.com/user-attachments/assets/42e2e48f-12fc-471f-ada4-8dbc1698d8b3)
 
+Generate Image
 ![Image](https://github.com/user-attachments/assets/a09f3234-9c72-45a4-9dba-b48225a0c019)
 
+If you cannot get images, try this prompt
 ![Image](https://github.com/user-attachments/assets/d70dc6ef-1074-4de2-a7df-13be82645a00)
 
+After retry several times... like this
 ![Image](https://github.com/user-attachments/assets/d3d5aed3-1657-4fc3-b613-ea8cb1a336dc)
 
 ### (Results)
