@@ -38,7 +38,7 @@ Chrono Banana Factory is an innovative tool that generates a series of images re
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 22.23.4+ (22.x LTS; see `.node-version`)
 - npm or yarn
 - Google AI Studio API Key
 
