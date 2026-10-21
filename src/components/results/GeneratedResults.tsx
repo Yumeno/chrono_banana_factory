@@ -7,13 +7,14 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Download, ChevronLeft, ChevronRight, Play, Upload } from 'lucide-react'
 import Image from 'next/image'
+import type { AspectRatio } from '@/lib/utils/aspectRatioUtils'
 
 interface GeneratedResultsProps {
   // Props for image generation
   images?: string[]
   currentIndex?: number
   isLoading?: boolean
-  onGenerate?: (prompt: string, aspectRatio: string) => Promise<void>
+  onGenerate?: (prompt: string, aspectRatio: AspectRatio) => Promise<void>
   storyText?: string
   metadata?: {
     prompt: string
@@ -46,7 +47,7 @@ export function GeneratedResults({
 }: GeneratedResultsProps) {
   const hasImages = images.length > 0
   const totalImages = images.length
-  const [selectedAspectRatio, setSelectedAspectRatio] = useState('auto')
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState<AspectRatio>('auto')
   const [actualImageSize, setActualImageSize] = useState<{ width: number; height: number } | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
@@ -190,7 +191,7 @@ export function GeneratedResults({
         {/* Aspect Ratio Selector */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">Aspect Ratio:</span>
-          <Select value={selectedAspectRatio} onValueChange={setSelectedAspectRatio}>
+          <Select value={selectedAspectRatio} onValueChange={(value) => setSelectedAspectRatio(value as AspectRatio)}>
             <SelectTrigger className="w-32 h-8 text-sm bg-white">
               <SelectValue />
             </SelectTrigger>

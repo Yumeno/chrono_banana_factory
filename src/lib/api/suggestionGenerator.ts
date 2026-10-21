@@ -1,4 +1,5 @@
 import { UploadedImage } from '@/types'
+import type { nanoBananaClient } from '@/lib/api/nanoBananaClient'
 
 export interface SuggestionRequest {
   currentText: string
@@ -15,7 +16,7 @@ export interface SuggestionResponse {
     processingTime: number
     inputTokens?: number
     outputTokens?: number
-    detectedMode?: 'story' | 'scene'
+    detectedMode?: 'story' | 'scene' | 'moment'
   }
 }
 
@@ -101,7 +102,7 @@ export class SuggestionGenerator {
    */
   async generate(
     request: SuggestionRequest,
-    apiClient: any
+    apiClient: Pick<typeof nanoBananaClient, 'generateSuggestion'>
   ): Promise<SuggestionResponse> {
     const startTime = Date.now()
     

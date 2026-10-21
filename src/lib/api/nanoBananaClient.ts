@@ -1,6 +1,15 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { ImageGenerationRequest, GeneratedImage, ImageEditRequest, TimelineResponse, ContentPart } from '@/types'
+import { GoogleGenerativeAI, type GenerateContentResult, type Part } from '@google/generative-ai'
+import { ImageGenerationRequest, GeneratedImage, ImageEditRequest, TimelineResponse, ContentPart, UploadedImage } from '@/types'
 import { getEnvironmentVariable, getEnvironmentDebugInfo } from '@/lib/env'
+
+export interface SuggestionResult {
+  suggestion: string
+  model: string
+  metadata?: {
+    processingTime: number
+    outputLength: number
+  }
+}
 
 class NanoBananaClient {
   private readonly apiKey: string
@@ -103,7 +112,7 @@ Or create .env.local file:
         { text: request.prompt },
         ...request.images.map((img, index) => {
           // Use base64 property for UploadedImage type
-          const imageData = img.base64 || (img as any).data
+          const imageData = img.base64 || (img as UploadedImage & { data?: string }).data || ''
           const imageName = img.name || 'unnamed'
           console.log(`  ${index + 1}. ${imageName} (${img.mimeType}, ${Math.round(imageData.length / 1024)}KB)`)
           return {
@@ -212,12 +221,12 @@ Or create .env.local file:
   }
 
 
-  private parseResponse(response: any, request: ImageGenerationRequest | ImageEditRequest): GeneratedImage | GeneratedImage[] {
+  private parseResponse(response: GenerateContentResult, request: ImageGenerationRequest | ImageEditRequest): GeneratedImage | GeneratedImage[] {
     // Log the raw response for debugging
     console.log('🔍 Raw API Response:', JSON.stringify(response, null, 2))
     
     // Handle response from GoogleGenerativeAI SDK
-    const result = response.response || response
+    const result = response.response
     
     if (!result) {
       throw new Error('No response data received from API')
@@ -236,7 +245,7 @@ Or create .env.local file:
       const images: GeneratedImage[] = []
       
       // Collect all images from the response
-      result.candidates[0].content.parts.forEach((part: any, index: number) => {
+      result.candidates[0].content.parts.forEach((part: Part, index: number) => {
         // Check for inline data (base64 encoded image)
         if (part.inlineData) {
           const { mimeType, data } = part.inlineData
@@ -381,7 +390,7 @@ Or create .env.local file:
   async generateSuggestion(request: {
     prompt: string
     images?: Array<{ data: string; mimeType: string }>
-  }): Promise<{ suggestion: string; model: string; metadata?: any }> {
+  }): Promise<SuggestionResult> {
     await this.enforceRateLimit()
     
     console.log('🎨 [SUGGESTION API] Starting text generation')
@@ -403,7 +412,7 @@ Or create .env.local file:
       })
       
       // Build contents array
-      const contents: any[] = [{ text: request.prompt }]
+      const contents: Part[] = [{ text: request.prompt }]
       
       // Add images if provided
       if (request.images && request.images.length > 0) {
@@ -597,7 +606,7 @@ export const nanoBananaClient = {
     return this.instance.generateTimeline(request)
   },
 
-  async generateSuggestion(request: { prompt: string; images?: Array<{ data: string; mimeType: string }> }): Promise<{ suggestion: string; model: string; metadata?: any }> {
+  async generateSuggestion(request: { prompt: string; images?: Array<{ data: string; mimeType: string }> }): Promise<SuggestionResult> {
     return this.instance.generateSuggestion(request)
   },
 

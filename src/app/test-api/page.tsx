@@ -2,11 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { nanoBananaClient } from '@/lib/api/nanoBananaClient'
+import type { GeneratedImage } from '@/types'
+
+interface TestResult {
+  success: boolean
+  message: string
+  details?: unknown
+  image?: GeneratedImage | GeneratedImage[]
+}
 
 export default function TestAPI() {
   const [status, setStatus] = useState<string>('Initializing...')
-  const [debugInfo, setDebugInfo] = useState<any>(null)
-  const [testResult, setTestResult] = useState<any>(null)
+  const [debugInfo, setDebugInfo] = useState<Record<string, unknown> | null>(null)
+  const [testResult, setTestResult] = useState<TestResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -91,7 +99,7 @@ export default function TestAPI() {
             <pre className="text-sm overflow-auto">
               {JSON.stringify(testResult, null, 2)}
             </pre>
-            {testResult.image?.imageUrl && (
+            {testResult.image && !Array.isArray(testResult.image) && testResult.image.imageUrl && (
               <div className="mt-4">
                 <img 
                   src={testResult.image.imageUrl} 

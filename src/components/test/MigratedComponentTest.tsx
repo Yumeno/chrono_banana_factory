@@ -68,7 +68,7 @@ export function MigratedComponentTest() {
     // Test 2: Aspect Ratio Utility Import
     try {
       const { getAspectRatioPromptSuffix } = await import('@/lib/utils/aspectRatioUtils')
-      const promptSuffix = getAspectRatioPromptSuffix()
+      const promptSuffix = getAspectRatioPromptSuffix('1:1')
       
       if (promptSuffix.includes('white blank image')) {
         results.push({

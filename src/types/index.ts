@@ -18,6 +18,7 @@ export interface GeneratedImage {
   metadata: {
     mimeType: string;
     processingTime?: number;
+    imageIndex?: number;
     dimensions?: {
       width: number;
       height: number;
