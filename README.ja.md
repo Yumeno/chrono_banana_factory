@@ -37,7 +37,7 @@ Chrono Banana Factoryは、時間の経過を表現した一連の画像を生�
 
 ### 必要条件
 
-- Node.js 18以上
+- Node.js 22.23.4以上（22.x LTS、`.node-version` 参照）
 - npm または yarn
 - Google AI Studio APIキー
 

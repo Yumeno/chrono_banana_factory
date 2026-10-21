@@ -9,7 +9,7 @@ import { ImageUpload } from '@/components/upload/ImageUpload'
 import { ArtStyleSelector, type ArtStyle } from '@/components/style/ArtStyleSelector'
 import { nanoBananaClient } from '@/lib/api/nanoBananaClient'
 import { suggestionGenerator } from '@/lib/api/suggestionGenerator'
-import { getAspectRatioPromptSuffix, getWhiteBlankImageData, aspectRatioPresets } from '@/lib/utils/aspectRatioUtils'
+import { getAspectRatioPromptSuffix, getWhiteBlankImageData, aspectRatioPresets, type AspectRatio } from '@/lib/utils/aspectRatioUtils'
 import { TimeMode, TimeUnit, timeUnitToEnglish } from '@/types/timeControl'
 import type { UploadedImage } from '@/types'
 
@@ -35,6 +35,9 @@ export default function Home() {
     aspectRatio: string
     model: string
     timestamp: Date
+    timeControlSuffix?: string
+    artStyleSuffix?: string
+    aspectRatioSuffix?: string
   } | null>(null)
   
   // Time control state
@@ -55,7 +58,7 @@ export default function Home() {
   const [suggestionError, setSuggestionError] = useState<string | null>(null)
 
   // Multiple image generation function
-  const handleGenerate = async (prompt: string, aspectRatio: string) => {
+  const handleGenerate = async (prompt: string, aspectRatio: AspectRatio) => {
     if (!prompt.trim()) return
 
     setIsGenerating(true)
@@ -420,7 +423,7 @@ export default function Home() {
       <TimePointControls 
         imageCount={imageCount}
         onImageCountChange={setImageCount}
-        onTimeControlChange={useCallback((params) => {
+        onTimeControlChange={useCallback((params: typeof timeControlState) => {
           setTimeControlState(params)
           // Update imageCount from time control
           setImageCount(params.imageCount)
@@ -431,11 +434,7 @@ export default function Home() {
       {showTextAlert && (
         <div className="fixed top-4 right-4 z-50 max-w-md"
              style={{
-               animation: 'slideDown 0.3s ease-out',
-               '@keyframes slideDown': {
-                 from: { transform: 'translateY(-100%)', opacity: 0 },
-                 to: { transform: 'translateY(0)', opacity: 1 }
-               }
+               animation: 'slideDown 0.3s ease-out'
              }}>
           <div className="bg-amber-50 border border-amber-200 rounded-lg shadow-lg p-4">
             <div className="flex justify-between items-start">
